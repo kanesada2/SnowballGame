@@ -1,0 +1,27 @@
+#######################################################################################################################
+#                                                                                                                     #
+# Knokback_For_Players: true/false (If true, snowballs will cause knockback to players when they hits.)               #
+#                                                                                                                     #
+# Ball:                                                                                                               #
+#    Enabled_Ball: true/false (If true, players can make custom snowball which behave like a ball for baseball.)      #
+#    Ball_Name: 'BallName' (DisplayName for the custom snowball)                                                      #
+# Bat:                                                                                                                #
+#    Enabled_Bat : true/false (If true, players can make custom bow which behave like a bat for baseball.)            #
+#    Bat_Name: 'BatName' (DisplayName for the custom bow)                                                             #
+# Glove:                                                                                                              #
+#    Enabled_Glove: true/false (If true, players can make custom leather which behave like a bat for baseball.)       #
+#    Glove_Name: 'Glove' (DisplayName for the custom leather)                                                         #
+#                                                                                                                     #
+#######################################################################################################################
+
+
+Knockback_For_Players: true
+Ball:
+    Enabled_Ball: true
+    Ball_Name: '加藤良三'
+Bat:
+    Enabled_Bat : true
+    Bat_Name: 'Bat'
+Glove:
+    Enabled_Glove: true
+    Glove_Name: 'Glove'
