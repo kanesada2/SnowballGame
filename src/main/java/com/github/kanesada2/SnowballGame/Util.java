@@ -5,14 +5,16 @@ import java.util.List;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.util.Vector;
 
 public final class Util {
 	 private Util() {}
 
-	 public static void causeKnockBack(Player player){
+	 public static void causeKnockBack(Player player, Projectile projectile){
 		 double health = player.getHealth();
 			if(health <= 2){
 				player.setHealth(health + 1);
@@ -21,6 +23,11 @@ public final class Util {
 				player.damage(1);
 				player.setHealth(health);
 			}
+			Vector knockbackVec = projectile.getVelocity().multiply(0.6);
+			if(knockbackVec.getY() < 0.3){
+				knockbackVec.setY(0.3);
+			}
+			player.setVelocity(knockbackVec);
 	 }
 	 public static boolean isMyItem(ItemStack item){
 		 if(!item.hasItemMeta()){
@@ -39,7 +46,7 @@ public final class Util {
 		 return isMyItem(item) && item.getType() == Material.LEATHER;
 	 }
 	 public static ItemStack getBall(){
-		 ItemStack ball = new ItemStack(Material.SNOW_BALL, 1);
+		 ItemStack ball = new ItemStack(Material.SNOW_BALL);
 		 ItemMeta ballMeta = ball.getItemMeta();
 		 List<String> lore = new ArrayList<String>();
 		 lore.add("SnowballGame Item");
@@ -51,7 +58,7 @@ public final class Util {
 		 return ball;
 	 }
 	 public static ItemStack getBat(){
-		 ItemStack bat = new ItemStack(Material.BOW, 1);
+		 ItemStack bat = new ItemStack(Material.BOW);
 		 ItemMeta batMeta = bat.getItemMeta();
 		 List<String> lore = new ArrayList<String>();
 		 lore.add("SnowballGame Item");
@@ -63,7 +70,7 @@ public final class Util {
 		 return bat;
 	 }
 	 public static ItemStack getGlove(){
-		 ItemStack glove = new ItemStack(Material.LEATHER, 1);
+		 ItemStack glove = new ItemStack(Material.LEATHER);
 		 ItemMeta gloveMeta = glove.getItemMeta();
 		 List<String> lore = new ArrayList<String>();
 		 lore.add("SnowballGame Item");

@@ -88,6 +88,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 				}else{
 					player.getWorld().dropItem(player.getLocation(), item);
 				}
+				sender.sendMessage("You got a SnowballGame's item!");
 				return true;
 			default:
 				sender.sendMessage("Unknown command. Please check /sbg");

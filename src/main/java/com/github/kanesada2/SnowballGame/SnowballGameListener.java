@@ -2,7 +2,7 @@ package com.github.kanesada2.SnowballGame;
 
 import java.util.Collection;
 
-import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -23,6 +23,7 @@ import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.projectiles.BlockProjectileSource;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 
@@ -38,16 +39,22 @@ public class SnowballGameListener implements Listener {
 		if(!(plugin.getConfig().getBoolean("Ball.Enabled_Ball") && event.getBlock().getType() == Material.DISPENSER && Util.isBall(event.getItem()))){
 			return;
 		}
-		event.setCancelled(true);
-		event.getItem().setAmount(event.getItem().getAmount() - 1);
+		//event.setCancelled(true);
 		Dispenser from = (Dispenser)event.getBlock().getState();
-		Projectile ball = from.getBlockProjectileSource().launchProjectile(Snowball.class);
-		ball.setMetadata("ballType", new FixedMetadataValue(plugin, "katoRyozo"));
+		from.setMetadata("isPitcher", new FixedMetadataValue(plugin, true));
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void onProjectileLaunch(ProjectileLaunchEvent event) {
 		Projectile projectile = event.getEntity();
 		if(!(projectile.getShooter() instanceof Player)){
+			if(projectile.getShooter() instanceof BlockProjectileSource){
+				BlockProjectileSource source = (BlockProjectileSource)projectile.getShooter();
+				Block from = source.getBlock();
+				if(from.hasMetadata("isPitcher")){
+					projectile.setMetadata("ballType", new FixedMetadataValue(plugin, "katoRyozo"));
+					from.removeMetadata("isPitcher", plugin);
+				}
+			}
 			return;
 		}
 		if(!(projectile instanceof Snowball)){
@@ -57,14 +64,6 @@ public class SnowballGameListener implements Listener {
 		ItemStack mainHand =  player.getInventory().getItemInMainHand();
 		if(Util.isBall(mainHand)){
 			projectile.setMetadata("ballType", new FixedMetadataValue(plugin, "katoRyozo"));
-		}
-		if(projectile.hasMetadata("ballType")){
-			Vector velocity = projectile.getVelocity();
-			velocity.setX(velocity.getX() * 0.8);
-			velocity.setY(velocity.getY() * 0.8);
-			velocity.setZ(velocity.getZ() * 0.8);
-			projectile.setVelocity(velocity);
-			Bukkit.getLogger().info(projectile.getVelocity().toString());
 		}
 	}
 	@EventHandler(priority = EventPriority.LOW)
@@ -85,8 +84,8 @@ public class SnowballGameListener implements Listener {
 						return;
 					}
 				} else {
-					if(plugin.getConfig().getBoolean("Knockback_For_Players"))
-					Util.causeKnockBack(player);
+					if(plugin.getConfig().getBoolean("Knockback_For_Players") && player.getGameMode() != GameMode.CREATIVE)
+					Util.causeKnockBack(player,projectile);
 				}
 			 }
 			 if(event.getHitBlock() != null){
@@ -115,7 +114,10 @@ public class SnowballGameListener implements Listener {
 			} else {
 			Entity hitEntity = event.getHitEntity();
 			if(hitEntity instanceof Player){
-				Util.causeKnockBack((Player)hitEntity);
+				Player player = (Player)hitEntity;
+				if(player.getGameMode() != GameMode.CREATIVE){
+					Util.causeKnockBack(player, projectile);
+				}
 			}
 		}
 	}
@@ -137,7 +139,6 @@ public class SnowballGameListener implements Listener {
 				break;
 			}
 		}
-
 		event.setCancelled(true);
 	}
 
