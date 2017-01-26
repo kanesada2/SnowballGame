@@ -39,7 +39,6 @@ public class SnowballGameListener implements Listener {
 		if(!(plugin.getConfig().getBoolean("Ball.Enabled_Ball") && event.getBlock().getType() == Material.DISPENSER && Util.isBall(event.getItem()))){
 			return;
 		}
-		//event.setCancelled(true);
 		Dispenser from = (Dispenser)event.getBlock().getState();
 		from.setMetadata("isPitcher", new FixedMetadataValue(plugin, true));
 	}
@@ -52,6 +51,7 @@ public class SnowballGameListener implements Listener {
 				Block from = source.getBlock();
 				if(from.hasMetadata("isPitcher")){
 					projectile.setMetadata("ballType", new FixedMetadataValue(plugin, "katoRyozo"));
+					projectile.setGlowing(true);
 					from.removeMetadata("isPitcher", plugin);
 				}
 			}
@@ -63,6 +63,7 @@ public class SnowballGameListener implements Listener {
 		Player player = (Player)projectile.getShooter();
 		ItemStack mainHand =  player.getInventory().getItemInMainHand();
 		if(Util.isBall(mainHand)){
+			projectile.setGlowing(true);
 			projectile.setMetadata("ballType", new FixedMetadataValue(plugin, "katoRyozo"));
 		}
 	}
@@ -103,7 +104,6 @@ public class SnowballGameListener implements Listener {
 					 Face = nextBlock.getFace(previousBlock);
 
 				 }
-
 				 if(projectile.getVelocity().length() > 0.2){
 					Projectile bounced = BallProcess.bounce(projectile,Face);
 					bounced.setMetadata("ballType", new FixedMetadataValue(plugin, "katoRyozo"));

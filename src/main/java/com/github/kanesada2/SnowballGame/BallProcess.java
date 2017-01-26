@@ -23,11 +23,12 @@ public class BallProcess {
 		}else{
 			y = -y;
 		}
-		velocity.setX(x * 0.6);
-		velocity.setY(y * 0.6);
-		velocity.setZ(z * 0.6);
+		velocity.setX(x * 0.7);
+		velocity.setY(y * 0.4);
+		velocity.setZ(z * 0.7);
 		bounced = (Projectile)hitLoc.getWorld().spawnEntity(hitLoc, EntityType.SNOWBALL);
 		bounced.setVelocity(velocity);
+		bounced.setGlowing(true);
 		bounced.setShooter(ball.getShooter());
 		return bounced;
 	}
@@ -35,19 +36,20 @@ public class BallProcess {
 		Vector velocity = ball.getVelocity();
 		Vector battedVec = ball.getLocation().toVector().subtract(impactLoc.toVector());
 		double power;
-		if(battedVec.length() < 0.5){
-			power = 2 * force;
+		if(battedVec.length() < 0.2){
+			power = 5 * force;
 		}else{
 			power = force / battedVec.length();
 		}
-		if(force * 1.2 > velocity.length()){
+		if(force * 1.5 > velocity.length()){
+
 			velocity.setX(-velocity.getX());
 			velocity.setX(-velocity.getY());
 			velocity.setZ(-velocity.getZ());
 		}else{
 			velocity.multiply(0.1);
 		}
-		battedVec.multiply(power * 1.4);
+		battedVec.multiply(power * 2.5);
 		velocity = velocity.add(battedVec);
 		ball.setVelocity(velocity);
 		impactLoc.getWorld().playSound(impactLoc, Sound.ENTITY_ENDERDRAGON_FIREBALL_EXPLODE , force, 1);
