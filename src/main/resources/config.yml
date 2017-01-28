@@ -18,7 +18,7 @@
 Knockback_For_Players: true
 Ball:
     Enabled_Ball: true
-    Ball_Name: '加藤良三'
+    Ball_Name: 'Ball'
 Bat:
     Enabled_Bat : true
     Bat_Name: 'Bat'

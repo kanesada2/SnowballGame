@@ -6,7 +6,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.Dispenser;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -24,8 +23,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.projectiles.BlockProjectileSource;
-import org.bukkit.util.BlockIterator;
-import org.bukkit.util.Vector;
 
 public class SnowballGameListener implements Listener {
 
@@ -89,26 +86,10 @@ public class SnowballGameListener implements Listener {
 					Util.causeKnockBack(player,projectile);
 				}
 			 }
-			 if(event.getHitBlock() != null){
-				 Vector velocity = projectile.getVelocity();
-				 Location hitLoc = projectile.getLocation();
-				 BlockFace Face = event.getHitBlock().getFace(hitLoc.getBlock());
-				 if(Face == null || Face.toString().contains("_")){
-					 BlockIterator blockIterator = new BlockIterator(hitLoc.getWorld(), hitLoc.toVector(), velocity, 0.0D, 3);
-					 Block previousBlock = hitLoc.getBlock();
-					 Block nextBlock = blockIterator.next();
-					 while (blockIterator.hasNext() && (nextBlock.getType() == Material.AIR || nextBlock.isLiquid() || nextBlock.equals(hitLoc.getBlock()))) {
-							previousBlock = nextBlock;
-							nextBlock = blockIterator.next();
-					 }
-					 Face = nextBlock.getFace(previousBlock);
-
-				 }
-				 if(projectile.getVelocity().length() > 0.2){
-					Projectile bounced = BallProcess.bounce(projectile,Face);
-					bounced.setMetadata("ballType", new FixedMetadataValue(plugin, "katoRyozo"));
-					return;
-				 }
+			 if(event.getHitBlock() != null && projectile.getVelocity().length() > 0.2){
+				Projectile bounced = BallProcess.bounce(projectile,event.getHitBlock());
+				bounced.setMetadata("ballType", new FixedMetadataValue(plugin, "katoRyozo"));
+				return;
 			 }
 			 projectile.getWorld().dropItem(projectile.getLocation(), ball);
 			} else {

@@ -1,5 +1,6 @@
 package com.github.kanesada2.SnowballGame;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -22,7 +23,42 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
     }
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String alias, String[] args) {
-		return null;
+		if (!cmd.getName().equalsIgnoreCase("SnowballGame")) {
+            return null;
+        }
+		ArrayList<String> completions = new ArrayList<String>();
+		switch(args.length){
+		case 1:
+			if (args[0].length() == 0) {
+	            completions.add("reload");
+	            completions.add("get");
+			}else {
+	            if ("reload".startsWith(args[0])) {
+	                completions.add("reload");
+	            }else if ("get".startsWith(args[0])) {
+	            	completions.add("reload");
+	            }
+	        }
+		case 2:
+			if(args[0].equalsIgnoreCase("get")){
+				if (args[1].length() == 0) {
+					completions.add("Ball");
+					completions.add("Bat");
+		            completions.add("Glove");
+				}else {
+		            if("Ball".startsWith(args[1])){
+		            	completions.add("Ball");
+		            }
+		            if("Bat".startsWith(args[1])){
+		            	completions.add("Bat");
+		            }
+		            if("Glove".startsWith(args[1])){
+		            	completions.add("Glove");
+		            }
+		        }
+		       }
+		}
+		return completions;
 	}
 
 	@Override

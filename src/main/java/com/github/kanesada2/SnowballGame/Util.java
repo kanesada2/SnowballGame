@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.ItemStack;
@@ -28,6 +29,13 @@ public final class Util {
 				knockbackVec.setY(0.3);
 			}
 			player.setVelocity(knockbackVec);
+	 }
+	 public static boolean doesRepel(Block block){
+		 List <Material> excluded = Data.noRepelList();
+		 if(excluded.contains(block.getType())){
+			 return false;
+		 }
+		 return true;
 	 }
 	 public static boolean isMyItem(ItemStack item){
 		 if(!item.hasItemMeta()){
@@ -84,8 +92,9 @@ public final class Util {
 	 public static ShapedRecipe getBallRecipe(){
 		 ItemStack ball = getBall();
 		 ShapedRecipe ballRecipe = new ShapedRecipe(ball);
-		 ballRecipe.shape("LLL","LBL","LLL");
+		 ballRecipe.shape("LSL","SBS","LSL");
 		 ballRecipe.setIngredient('L', Material.LEATHER);
+		 ballRecipe.setIngredient('S', Material.STRING);
 		 ballRecipe.setIngredient('B', Material.SNOW_BALL);
 		 return ballRecipe;
 	 }
