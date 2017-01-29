@@ -59,7 +59,8 @@ public class SnowballGameListener implements Listener {
 		}
 		Player player = (Player)projectile.getShooter();
 		ItemStack mainHand =  player.getInventory().getItemInMainHand();
-		if(Util.isBall(mainHand)){
+		ItemStack offHand =  player.getInventory().getItemInOffHand();
+		if(Util.isBall(mainHand) || Util.isBall(offHand) && mainHand.getType() != Material.SNOW_BALL){
 			projectile.setGlowing(true);
 			projectile.setMetadata("ballType", new FixedMetadataValue(plugin, "katoRyozo"));
 		}
