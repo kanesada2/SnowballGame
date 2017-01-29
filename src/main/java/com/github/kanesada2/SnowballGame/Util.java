@@ -1,12 +1,16 @@
 package com.github.kanesada2.SnowballGame;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.entity.Snowball;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -111,5 +115,11 @@ public final class Util {
 		 gloveRecipe.shape("LLL","LLL"," L ");
 		 gloveRecipe.setIngredient('L', Material.LEATHER);
 		 return gloveRecipe;
+	 }
+
+	 public static void deleteBalls(World world){
+		 Collection <Snowball> balls = world.getEntitiesByClass(Snowball.class);
+		 Bukkit.getLogger().info("[SnowballGame] Deleting Balls in " + world.getName() + "...");
+		 balls.forEach(ball -> ball.remove());
 	 }
 }

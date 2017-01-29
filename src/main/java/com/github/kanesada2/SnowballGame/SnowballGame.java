@@ -1,5 +1,8 @@
 package com.github.kanesada2.SnowballGame;
 
+import java.util.List;
+
+import org.bukkit.World;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -21,7 +24,8 @@ public class SnowballGame extends JavaPlugin implements Listener{
 
     @Override
     public void onDisable() {
-    	getLogger().info("SnowballGame Disabled!");
+    	List <World> worlds = getServer().getWorlds();
+    	worlds.forEach(world -> Util.deleteBalls(world));
     }
     private void registerCustomRecipes() {
     	getServer().addRecipe(Util.getBallRecipe());

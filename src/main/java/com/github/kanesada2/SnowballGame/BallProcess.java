@@ -58,7 +58,7 @@ public class BallProcess {
 		}else{
 			power = force / battedVec.length();
 		}
-		if(force * 1.5 > velocity.length()){
+		if(force * 1.6 > velocity.length()){
 
 			velocity.setX(-velocity.getX());
 			velocity.setX(-velocity.getY());
@@ -68,6 +68,7 @@ public class BallProcess {
 		}
 		battedVec.multiply(power * 2.5);
 		velocity = velocity.add(battedVec);
+		ball.setGravity(true);
 		ball.setVelocity(velocity);
 		impactLoc.getWorld().playSound(impactLoc, Sound.ENTITY_ENDERDRAGON_FIREBALL_EXPLODE , force, 1);
 	}

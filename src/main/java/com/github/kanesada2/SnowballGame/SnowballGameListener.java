@@ -15,10 +15,12 @@ import org.bukkit.entity.Snowball;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -122,6 +124,41 @@ public class SnowballGameListener implements Listener {
 			}
 		}
 		event.setCancelled(true);
+	}
+	@EventHandler(priority = EventPriority.LOW)
+	public void onTeeInteracted(PlayerInteractEvent event){
+		if(!(event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType() == Material.BREWING_STAND)){
+			return;
+		}
+		if(!(Util.isBall(event.getPlayer().getInventory().getItemInMainHand()) || Util.isBall(event.getPlayer().getInventory().getItemInOffHand()))){
+			return;
+		}
+		event.setCancelled(true);
+		Block tee = event.getClickedBlock();
+		Location ballLoc = tee.getLocation();
+		ballLoc.setX(ballLoc.getX() + 0.5);
+		ballLoc.setY(ballLoc.getY() + 1.1);
+		ballLoc.setZ(ballLoc.getZ() + 0.5);
+		Collection <Entity> nearByEntities = ballLoc.getWorld().getNearbyEntities(ballLoc, 0.1, 0.1, 0.1);
+		for (Entity entity : nearByEntities) {
+			if(entity.getType() == EntityType.SNOWBALL && entity.hasMetadata("ballType")){
+				return;
+			}
+		}
+		Projectile placedBall = (Projectile)tee.getWorld().spawnEntity(ballLoc, EntityType.SNOWBALL);
+		placedBall.setMetadata("ballType", new FixedMetadataValue(plugin, "katoRyozo"));
+		placedBall.setGravity(false);
+		placedBall.setGlowing(true);
+		ItemStack mainHand = event.getPlayer().getInventory().getItemInMainHand();
+		ItemStack offHand = event.getPlayer().getInventory().getItemInOffHand();
+		if(event.getPlayer().getGameMode() == GameMode.CREATIVE){
+			return;
+		}
+		if(Util.isBall(mainHand)){
+			mainHand.setAmount(mainHand.getAmount() - 1);
+		}else if(Util.isBall(offHand)){
+			offHand.setAmount(offHand.getAmount() - 1);
+		}
 	}
 
 }
