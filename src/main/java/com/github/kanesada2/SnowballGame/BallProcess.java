@@ -53,20 +53,43 @@ public class BallProcess {
 		Vector velocity = ball.getVelocity();
 		Vector battedVec = ball.getLocation().toVector().subtract(impactLoc.toVector());
 		double power;
-		if(battedVec.length() < 0.1){
-			power = 10 * force;
+		double coefficient = 2.0D;
+		if(battedVec.length() < 0.05){
+			battedVec.setX(-velocity.getX());
+			battedVec.setX(-velocity.getY());
+			battedVec.setZ(-velocity.getZ());
+			power = force * 50;
 		}else{
-			power = force / battedVec.length();
+			power = force / Math.pow(battedVec.length(), 1.3);
 		}
-		if(force * 1.6 > velocity.length()){
-
+		if(force * 2 > velocity.length()){
 			velocity.setX(-velocity.getX());
 			velocity.setX(-velocity.getY());
 			velocity.setZ(-velocity.getZ());
 		}else{
 			velocity.multiply(0.1);
 		}
-		battedVec.multiply(power * 2.5);
+			switch(ball.getMetadata("ballType").get(0).asString()){
+			case "higest":
+				coefficient = 2.8D;
+				break;
+			case "higer":
+				coefficient = 2.4D;
+				break;
+			case "normal":
+				coefficient = 2.0D;
+				break;
+			case "lower":
+				coefficient = 1.6D;
+				break;
+			case "lowest":
+				coefficient = 1.2D;
+				break;
+			default:
+				coefficient = 2.0D;
+				break;
+			}
+		battedVec.multiply(power * coefficient);
 		velocity = velocity.add(battedVec);
 		ball.setGravity(true);
 		ball.setVelocity(velocity);

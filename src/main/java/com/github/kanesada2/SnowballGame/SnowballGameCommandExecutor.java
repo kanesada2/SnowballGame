@@ -39,6 +39,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 	            	completions.add("reload");
 	            }
 	        }
+			break;
 		case 2:
 			if(args[0].equalsIgnoreCase("get")){
 				if (args[1].length() == 0) {
@@ -57,6 +58,34 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 		            }
 		        }
 		       }
+			break;
+		case 3:
+			if(args[1].equalsIgnoreCase("ball")){
+				if (args[2].length() == 0) {
+					completions.add("Highest");
+					completions.add("Higher");
+		            completions.add("Normal");
+		            completions.add("Lower");
+		            completions.add("Lowest");
+				}else {
+		            if("Highest".startsWith(args[2])){
+		            	completions.add("Highest");
+		            }
+		            if("Higher".startsWith(args[2])){
+		            	completions.add("higher");
+		            }
+		            if("Normal".startsWith(args[2])){
+		            	completions.add("Normal");
+		            }
+		            if("Lower".startsWith(args[2])){
+		            	completions.add("Lower");
+		            }
+		            if("Lowest".startsWith(args[2])){
+		            	completions.add("Lowest");
+		            }
+		        }
+		       }
+			break;
 		}
 		return completions;
 	}
@@ -71,7 +100,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 				String [] msgs = new String[3];
 				msgs[0] = "/sbg " + ChatColor.YELLOW + "show all SnowballGame commands.";
 				msgs[1] = "/sbg reload " + ChatColor.YELLOW + "reload SnowballGame's config file";
-				msgs[2] = "/sbg get [Ball|Bat|Glove] " + ChatColor.YELLOW + "get SnowballGame's custom item.";
+				msgs[2] = "/sbg get [Ball|Bat|Glove] <Highest|Higher|Normal|Lower|Lowest>" + ChatColor.YELLOW + "get SnowballGame's custom item.";
 				sender.sendMessage(msgs);
 				return true;
 			case 1:
@@ -108,7 +137,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 				}
 				ItemStack item;
 				if(args[1].equalsIgnoreCase("Ball")){
-					item = Util.getBall();
+					item = Util.getBall("normal");
 				}else if(args[1].equalsIgnoreCase("Bat")){
 					item = Util.getBat();
 				}else if(args[1].equalsIgnoreCase("Glove")){
@@ -123,6 +152,49 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 					inventory.addItem(item);
 				}else{
 					player.getWorld().dropItem(player.getLocation(), item);
+				}
+				sender.sendMessage("You got a SnowballGame's item!");
+				return true;
+			case 3:
+				if(!(sender instanceof Player)){
+					sender.sendMessage("Please send this command in game.");
+					return false;
+				}
+				if(!args[0].equalsIgnoreCase("get")){
+					Bukkit.getLogger().info(args[0]);
+					sender.sendMessage("Unknown command. Please check /sbg");
+					return false;
+				}
+				if(!args[1].equalsIgnoreCase("ball")){
+					Bukkit.getLogger().info(args[0]);
+					sender.sendMessage("You can't choice the type of such a item.");
+					return false;
+				}
+				if(!sender.hasPermission("SnowballGame.get")){
+					sender.sendMessage("You don't have permisson.");
+					return false;
+				}
+				ItemStack ball;
+				if(args[2].equalsIgnoreCase("Highest")){
+					ball = Util.getBall("highest");
+				}else if(args[2].equalsIgnoreCase("Higher")){
+					ball = Util.getBall("higher");
+				}else if(args[2].equalsIgnoreCase("Normal")){
+					ball = Util.getBall("normal");
+				}else if(args[2].equalsIgnoreCase("Lower")){
+					ball = Util.getBall("lower");
+				}else if(args[2].equalsIgnoreCase("Lowest")){
+					ball = Util.getBall("lowest");
+				}else{
+					sender.sendMessage("SnowballGame can't provide such a item.");
+					return false;
+				}
+				Player pler = (Player)sender;
+				Inventory inv = pler.getInventory();
+				if(inv.containsAtLeast(ball,1) || inv.firstEmpty() != -1){
+					inv.addItem(ball);
+				}else{
+					pler.getWorld().dropItem(pler.getLocation(), ball);
 				}
 				sender.sendMessage("You got a SnowballGame's item!");
 				return true;

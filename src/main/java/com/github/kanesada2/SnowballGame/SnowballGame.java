@@ -28,7 +28,11 @@ public class SnowballGame extends JavaPlugin implements Listener{
     	worlds.forEach(world -> Util.deleteBalls(world));
     }
     private void registerCustomRecipes() {
-    	getServer().addRecipe(Util.getBallRecipe());
+    	getServer().addRecipe(Util.getBallRecipe("highest"));
+    	getServer().addRecipe(Util.getBallRecipe("higher"));
+    	getServer().addRecipe(Util.getBallRecipe("normal"));
+    	getServer().addRecipe(Util.getBallRecipe("lower"));
+    	getServer().addRecipe(Util.getBallRecipe("lowest"));
     	getServer().addRecipe(Util.getBatRecipe());
     	getServer().addRecipe(Util.getGloveRecipe());
     	getLogger().info("Custom Recipe Enabled!");

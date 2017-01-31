@@ -57,12 +57,26 @@ public final class Util {
 	 public static boolean isGlove(ItemStack item){
 		 return isMyItem(item) && item.getType() == Material.LEATHER;
 	 }
-	 public static ItemStack getBall(){
+	 public static ItemStack getBall(String type){
 		 ItemStack ball = new ItemStack(Material.SNOW_BALL);
 		 ItemMeta ballMeta = ball.getItemMeta();
 		 List<String> lore = new ArrayList<String>();
 		 lore.add("SnowballGame Item");
 		 lore.add("Ball");
+		 switch(type){
+		 case "highest":
+			 lore.add("Highest-repulsion");
+			 break;
+		 case "higher":
+			 lore.add("Higher-repulsion");
+			 break;
+		 case "lower":
+			 lore.add("Lower-repulsion");
+			 break;
+		 case "lowest":
+			 lore.add("Lowest-repulsion");
+			 break;
+		 }
 		 ballMeta.setLore(lore);
 		 String name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Ball_Name");
 		 ballMeta.setDisplayName(name);
@@ -93,13 +107,28 @@ public final class Util {
 		 glove.setItemMeta(gloveMeta);
 		 return glove;
 	 }
-	 public static ShapedRecipe getBallRecipe(){
-		 ItemStack ball = getBall();
+	 public static ShapedRecipe getBallRecipe(String type){
+		 ItemStack ball = getBall(type);
 		 ShapedRecipe ballRecipe = new ShapedRecipe(ball);
+		 Material inclusion = Material.SNOW_BALL;
+		 switch(type){
+		 case "highest":
+			 inclusion = Material.ENDER_PEARL;
+			 break;
+		 case "higher":
+			 inclusion = Material.SLIME_BALL;
+			 break;
+		 case "lower":
+			 inclusion = Material.EGG;
+			 break;
+		 case "lowest":
+			 inclusion = Material.CLAY_BALL;
+			 break;
+		 }
 		 ballRecipe.shape("LSL","SBS","LSL");
 		 ballRecipe.setIngredient('L', Material.LEATHER);
 		 ballRecipe.setIngredient('S', Material.STRING);
-		 ballRecipe.setIngredient('B', Material.SNOW_BALL);
+		 ballRecipe.setIngredient('B', inclusion);
 		 return ballRecipe;
 	 }
 	 public static ShapedRecipe getBatRecipe(){
@@ -115,6 +144,21 @@ public final class Util {
 		 gloveRecipe.shape("LLL","LLL"," L ");
 		 gloveRecipe.setIngredient('L', Material.LEATHER);
 		 return gloveRecipe;
+	 }
+	 public static String getBallType(List <String> lore){
+		 String ballType = "";
+		 if(lore.contains("Highest-repulsion")){
+			 ballType = "highest";
+		 }else if(lore.contains("Higher-repulsion")){
+			 ballType = "higher";
+		 }else if(lore.contains("Lower-repulsion")){
+			 ballType = "lower";
+		 }else if(lore.contains("Lowest-repulsion")){
+			 ballType = "lowest";
+		 }else{
+			 ballType = "normal";
+		 }
+		 return ballType;
 	 }
 
 	 public static void deleteBalls(World world){
