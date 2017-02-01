@@ -5,6 +5,8 @@ import java.util.Collection;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
 import org.bukkit.entity.Entity;
@@ -125,6 +127,13 @@ public class SnowballGameListener implements Listener {
 				BallProcess.hit((Projectile)entity,impactLoc , force);
 				break;
 			}
+		}
+		Player player = (Player)event.getEntity();
+		if(force > 0.7){
+			Location playerLoc = player.getLocation();
+			playerLoc.setY(impactLoc.getY());
+			player.getWorld().playSound(playerLoc, Sound.ENTITY_PLAYER_ATTACK_SWEEP, force, 1);
+			player.spawnParticle(Particle.SWEEP_ATTACK, playerLoc, 1);
 		}
 		event.setCancelled(true);
 	}
