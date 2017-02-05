@@ -46,30 +46,28 @@ public class SnowballGameListener implements Listener {
 	@EventHandler(priority = EventPriority.LOW)
 	public void onProjectileLaunch(ProjectileLaunchEvent event) {
 		Projectile projectile = event.getEntity();
-		if(!(projectile.getShooter() instanceof Player)){
-			if(projectile.getShooter() instanceof BlockProjectileSource){
-				BlockProjectileSource source = (BlockProjectileSource)projectile.getShooter();
-				Block from = source.getBlock();
-				if(from.hasMetadata("ballType")){
-					projectile.setMetadata("ballType", new FixedMetadataValue(plugin, from.getMetadata("ballType").get(0).asString()));
-					projectile.setGlowing(true);
-					from.removeMetadata("ballType", plugin);
-				}
-			}
-			return;
-		}
 		if(!(projectile instanceof Snowball)){
 			return;
 		}
-		Player player = (Player)projectile.getShooter();
-		ItemStack mainHand =  player.getInventory().getItemInMainHand();
-		ItemStack offHand =  player.getInventory().getItemInOffHand();
-		if(Util.isBall(mainHand)){
-			projectile.setMetadata("ballType", new FixedMetadataValue(plugin, Util.getBallType(mainHand.getItemMeta().getLore())));
-		}else if(Util.isBall(offHand) && mainHand.getType() != Material.SNOW_BALL){
-			projectile.setMetadata("ballType", new FixedMetadataValue(plugin, Util.getBallType(offHand.getItemMeta().getLore())));
+		if(projectile.getShooter() instanceof Player){
+			Player player = (Player)projectile.getShooter();
+			ItemStack mainHand =  player.getInventory().getItemInMainHand();
+			ItemStack offHand =  player.getInventory().getItemInOffHand();
+			if(Util.isBall(mainHand)){
+				projectile.setMetadata("ballType", new FixedMetadataValue(plugin, Util.getBallType(mainHand.getItemMeta().getLore())));
+			}else if(Util.isBall(offHand) && mainHand.getType() != Material.SNOW_BALL){
+				projectile.setMetadata("ballType", new FixedMetadataValue(plugin, Util.getBallType(offHand.getItemMeta().getLore())));
+			}
+			projectile.setGlowing(true);
+		}else if(projectile.getShooter() instanceof BlockProjectileSource){
+			BlockProjectileSource source = (BlockProjectileSource)projectile.getShooter();
+			Block from = source.getBlock();
+			if(from.hasMetadata("ballType")){
+				projectile.setMetadata("ballType", new FixedMetadataValue(plugin, from.getMetadata("ballType").get(0).asString()));
+				projectile.setGlowing(true);
+				from.removeMetadata("ballType", plugin);
+			}
 		}
-		projectile.setGlowing(true);
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void onProjectileHit(ProjectileHitEvent event) {

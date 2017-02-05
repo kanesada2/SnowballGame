@@ -16,33 +16,47 @@ public class BallProcess {
 		Vector velocity = ball.getVelocity();
 		Location hitLoc = ball.getLocation();
 		Projectile bounced;
+		if(hitBlock.getType() == Material.IRON_FENCE || hitBlock.getType() == Material.VINE){
+			velocity.multiply(0.1);
+		}
 		Double x = velocity.getX();
 		Double y = velocity.getY();
 		Double z = velocity.getZ();
 		BlockFace hitFace = hitBlock.getFace(hitLoc.getBlock());
-		if(!Util.doesRepel(hitBlock)){
+		if(Util.doesRegardUp(hitBlock)){
 			hitFace = BlockFace.UP;
-		}
-		if(hitFace == null || hitFace.toString().contains("_")){
+		}else if(hitFace == null || hitFace.toString().contains("_")){
 			 BlockIterator blockIterator = new BlockIterator(hitLoc.getWorld(), hitLoc.toVector(), velocity, 0.0D, 3);
 			 Block previousBlock = hitLoc.getBlock();
 			 Block nextBlock = blockIterator.next();
-			while (blockIterator.hasNext() && (nextBlock.getType() == Material.AIR ||nextBlock.isLiquid() || nextBlock.equals(hitLoc.getBlock()))) {
+			while (blockIterator.hasNext() && (!Util.doesRepel(nextBlock) ||nextBlock.isLiquid() || nextBlock.equals(hitLoc.getBlock()))) {
 					previousBlock = nextBlock;
 					nextBlock = blockIterator.next();
 			 }
 			 hitFace = nextBlock.getFace(previousBlock);
 		 }
-		if(hitFace == BlockFace.SOUTH || hitFace == BlockFace.NORTH){
-			z = -z;
-		}else if(hitFace == BlockFace.EAST || hitFace == BlockFace.WEST){
-			x = -x;
+		if(!Util.doesRepel(hitBlock)){
+			if(hitBlock.getType() == Material.WEB){
+				hitLoc = hitBlock.getLocation().add(0.5, 0, 0.5);
+				velocity.zero();
+			}else{
+				hitLoc = hitLoc.add(velocity);
+				while(!(hitLoc.getBlock().getType() == Material.AIR || hitLoc.getBlock().isLiquid())){
+					hitLoc.setY(hitLoc.getY() + 0.1);
+				}
+			}
 		}else{
-				y = -y;
+			if(hitFace == BlockFace.SOUTH || hitFace == BlockFace.NORTH){
+				z = -z;
+			}else if(hitFace == BlockFace.EAST || hitFace == BlockFace.WEST){
+				x = -x;
+			}else{
+					y = -y;
+			}
+			velocity.setX(x * 0.7);
+			velocity.setY(y * 0.4);
+			velocity.setZ(z * 0.7);
 		}
-		velocity.setX(x * 0.7);
-		velocity.setY(y * 0.4);
-		velocity.setZ(z * 0.7);
 		bounced = (Projectile)hitLoc.getWorld().spawnEntity(hitLoc, EntityType.SNOWBALL);
 		bounced.setVelocity(velocity);
 		bounced.setGlowing(true);
@@ -70,10 +84,10 @@ public class BallProcess {
 			velocity.multiply(0.1);
 		}
 			switch(ball.getMetadata("ballType").get(0).asString()){
-			case "higest":
+			case "highest":
 				coefficient = 2.8D;
 				break;
-			case "higer":
+			case "higher":
 				coefficient = 2.4D;
 				break;
 			case "normal":

@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.kanesada2</groupId>
   <artifactId>SnowballGame</artifactId>
-  <version>0.2.1</version>
+  <version>0.2.3</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -13,6 +13,7 @@
      <plugin>
        <groupId>org.apache.maven.plugins</groupId>
        <artifactId>maven-compiler-plugin</artifactId>
+       <version>2.3.2</version>
        <configuration>
          <source>1.8</source>
          <target>1.8</target>

@@ -34,6 +34,13 @@ public final class Util {
 			}
 			player.setVelocity(knockbackVec);
 	 }
+	 public static boolean doesRegardUp(Block block){
+		 List <Material> excluded = Data.regardUpList();
+		 if(excluded.contains(block.getType())){
+			 return true;
+		 }
+		 return false;
+	 }
 	 public static boolean doesRepel(Block block){
 		 List <Material> excluded = Data.noRepelList();
 		 if(excluded.contains(block.getType())){
@@ -109,6 +116,7 @@ public final class Util {
 	 }
 	 public static ShapedRecipe getBallRecipe(String type){
 		 ItemStack ball = getBall(type);
+		 ball.setAmount(4);
 		 ShapedRecipe ballRecipe = new ShapedRecipe(ball);
 		 Material inclusion = Material.SNOW_BALL;
 		 switch(type){
