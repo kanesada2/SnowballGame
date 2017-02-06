@@ -19,6 +19,8 @@ public class SnowballGame extends JavaPlugin implements Listener{
         registerCustomRecipes();
         commandExecutor = new SnowballGameCommandExecutor(this);
         getCommand("SnowballGame").setExecutor(commandExecutor);
+        this.getConfig().options().copyDefaults(true);
+        this.saveConfig();
         getLogger().info("SnowballGame Enabled!");
     }
 

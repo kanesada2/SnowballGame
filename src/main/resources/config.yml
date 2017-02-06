@@ -1,27 +1,33 @@
-#######################################################################################################################
-#                                                                                                                     #
-# Knokback_For_Players: true/false (If true, snowballs will cause knockback to players when they hits.)               #
-#                                                                                                                     #
-# Ball:                                                                                                               #
-#    Enabled_Ball: true/false (If true, players can make custom snowball which behave like a ball for baseball.)      #
-#    Ball_Name: 'BallName' (DisplayName for the custom snowball)                                                      #
-# Bat:                                                                                                                #
-#    Enabled_Bat : true/false (If true, players can make custom bow which behave like a bat for baseball.)            #
-#    Bat_Name: 'BatName' (DisplayName for the custom bow)                                                             #
-# Glove:                                                                                                              #
-#    Enabled_Glove: true/false (If true, players can make custom leather which behave like a bat for baseball.)       #
-#    Glove_Name: 'Glove' (DisplayName for the custom leather)                                                         #
-#                                                                                                                     #
-#######################################################################################################################
+# SnowballGame Config
+####
 
-
+# true/false (If true, snowballs will cause knockback to players when they hits.)
 Knockback_For_Players: true
 Ball:
+    # true/false(If true, players can use custom snowball which behave like a ball for baseball.)
     Enabled_Ball: true
+    # 'BallName' (Default name to display for the custom snowball)
     Ball_Name: 'Ball'
+    Move:
+        # the name of the ball which will get faster speed than normal one when you pitch it
+        Fastball_Name: 'Fast'
+        # the name of the ball which will move your off-hand-side when you pitch it
+        Slider_Name: 'Slider'
+        # the name of the ball which will move your off-hand-side and drop down when you pitch it
+        Curve_Name: 'Curve'
+        # the name of the ball which will drop down when you pitch it
+        Folk_Name: 'Folk'
+        # the name of the ball which will move your main-hand-side and drop down when you pitch it
+        Sinker_Name: 'Sinker'
+        # the name of the ball which will move your main-hand-side when you pitch it
+        Shuuto_Name: 'Shuuto'
 Bat:
-    Enabled_Bat : true
+    # true/false (If true, players can use custom bow which behave like a bat for baseball.)
+    Enabled_Bat: true
+    # 'BatName' (Default name to display for the custom bow)
     Bat_Name: 'Bat'
 Glove:
+    # true/false (If true, players can use custom leather which behave like a bat for baseball.)
     Enabled_Glove: true
+    # 'GloveName' (Default name to display for the custom leather)
     Glove_Name: 'Glove'

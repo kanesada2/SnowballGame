@@ -67,25 +67,25 @@ public final class Util {
 	 public static ItemStack getBall(String type){
 		 ItemStack ball = new ItemStack(Material.SNOW_BALL);
 		 ItemMeta ballMeta = ball.getItemMeta();
+		 String name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Ball_Name");
 		 List<String> lore = new ArrayList<String>();
 		 lore.add("SnowballGame Item");
 		 lore.add("Ball");
 		 switch(type){
-		 case "highest":
-			 lore.add("Highest-repulsion");
-			 break;
-		 case "higher":
-			 lore.add("Higher-repulsion");
-			 break;
-		 case "lower":
-			 lore.add("Lower-repulsion");
-			 break;
-		 case "lowest":
-			 lore.add("Lowest-repulsion");
-			 break;
+			 case "highest":
+				 lore.add("Highest-repulsion");
+				 break;
+			 case "higher":
+				 lore.add("Higher-repulsion");
+				 break;
+			 case "lower":
+				 lore.add("Lower-repulsion");
+				 break;
+			 case "lowest":
+				 lore.add("Lowest-repulsion");
+				 break;
 		 }
 		 ballMeta.setLore(lore);
-		 String name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Ball_Name");
 		 ballMeta.setDisplayName(name);
 		 ball.setItemMeta(ballMeta);
 		 return ball;
@@ -168,7 +168,6 @@ public final class Util {
 		 }
 		 return ballType;
 	 }
-
 	 public static void deleteBalls(World world){
 		 Collection <Snowball> balls = world.getEntitiesByClass(Snowball.class);
 		 Bukkit.getLogger().info("[SnowballGame] Deleting Balls in " + world.getName() + "...");

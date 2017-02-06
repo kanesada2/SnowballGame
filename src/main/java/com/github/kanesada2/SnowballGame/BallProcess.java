@@ -109,4 +109,41 @@ public class BallProcess {
 		ball.setVelocity(velocity);
 		impactLoc.getWorld().playSound(impactLoc, Sound.ENTITY_ENDERDRAGON_FIREBALL_EXPLODE , force, 1);
 	}
+	public static Vector getMoveVector(Projectile ball, Location directionLoc, boolean isR){
+		String moveType = ball.getMetadata("moving").get(0).asString();
+		Vector velocity = ball.getVelocity();
+		Vector moveVector = new Vector(0,0,0);
+		double moved;
+		if(isR){
+			moved = 0.02;
+		}else{
+			moved = -0.02;
+		}
+		if(moveType.equalsIgnoreCase(SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Move.Fastball_Name"))){
+			velocity.multiply(1.1);
+		}else if(moveType.equalsIgnoreCase(SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Move.Slider_Name"))){
+			directionLoc.setYaw(directionLoc.getYaw() - 90);
+			moveVector = directionLoc.getDirection().normalize().multiply(moved);
+			moveVector.setY(-0.005);
+
+		}else if(moveType.equalsIgnoreCase(SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Move.Curve_Name"))){
+			velocity.multiply(0.9);
+			directionLoc.setYaw(directionLoc.getYaw() - 90);
+			moveVector = directionLoc.getDirection().normalize().multiply(moved);
+			moveVector.setY(-0.02);
+		}else if(moveType.equalsIgnoreCase(SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Move.Folk_Name"))){
+			moveVector.setY(-0.02);
+		}else if(moveType.equalsIgnoreCase(SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Move.Sinker_Name"))){
+			velocity.multiply(0.9);
+			directionLoc.setYaw(directionLoc.getYaw() + 90);
+			moveVector = directionLoc.getDirection().normalize().multiply(moved);
+			moveVector.setY(-0.02);
+		}else if(moveType.equalsIgnoreCase(SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Move.Shuuto_Name"))){
+			directionLoc.setYaw(directionLoc.getYaw() + 90);
+			moveVector = directionLoc.getDirection().normalize().multiply(moved);
+			moveVector.setY(-0.005);
+		}
+		ball.setVelocity(velocity);
+		return moveVector;
+	}
 }
