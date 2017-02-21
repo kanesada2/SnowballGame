@@ -46,16 +46,22 @@ public class BallProcess {
 				}
 			}
 		}else{
+			Vector vecToCompare;
 			if(hitFace == BlockFace.SOUTH || hitFace == BlockFace.NORTH){
 				z = -z;
+				vecToCompare = velocity.clone().setZ(0);
 			}else if(hitFace == BlockFace.EAST || hitFace == BlockFace.WEST){
 				x = -x;
+				vecToCompare = velocity.clone().setX(0);
 			}else{
-					y = -y;
+				y = -y;
+				vecToCompare = velocity.clone().setY(0);
 			}
-			velocity.setX(x * 0.7);
-			velocity.setY(y * 0.4);
-			velocity.setZ(z * 0.7);
+			double angle = velocity.angle(vecToCompare) / Math.toRadians(90);
+			velocity.setX(x * Math.pow(0.7, angle));
+			velocity.setY(y * Math.pow(0.4, angle));
+			velocity.setZ(z * Math.pow(0.7, angle));
+			velocity.multiply(Math.pow(1.3, -(velocity.length())));
 		}
 		bounced = (Projectile)hitLoc.getWorld().spawnEntity(hitLoc, EntityType.SNOWBALL);
 		bounced.setVelocity(velocity);
@@ -70,7 +76,7 @@ public class BallProcess {
 		double coefficient = 2.0D;
 		if(battedVec.length() < 0.05){
 			battedVec.setX(-velocity.getX());
-			battedVec.setX(-velocity.getY());
+			battedVec.setY(-velocity.getY());
 			battedVec.setZ(-velocity.getZ());
 			power = force * 50;
 		}else{
@@ -78,7 +84,7 @@ public class BallProcess {
 		}
 		if(force * 2 > velocity.length()){
 			velocity.setX(-velocity.getX());
-			velocity.setX(-velocity.getY());
+			velocity.setY(-velocity.getY());
 			velocity.setZ(-velocity.getZ());
 		}else{
 			velocity.multiply(0.1);
@@ -125,7 +131,6 @@ public class BallProcess {
 			directionLoc.setYaw(directionLoc.getYaw() - 90);
 			moveVector = directionLoc.getDirection().normalize().multiply(moved);
 			moveVector.setY(-0.005);
-
 		}else if(moveType.equalsIgnoreCase(SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Move.Curve_Name"))){
 			velocity.multiply(0.9);
 			directionLoc.setYaw(directionLoc.getYaw() - 90);

@@ -74,15 +74,19 @@ public final class Util {
 		 switch(type){
 			 case "highest":
 				 lore.add("Highest-repulsion");
+				 name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Repulsion.Highest");
 				 break;
 			 case "higher":
 				 lore.add("Higher-repulsion");
+				 name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Repulsion.Higher");
 				 break;
 			 case "lower":
 				 lore.add("Lower-repulsion");
+				 name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Repulsion.Lower");
 				 break;
 			 case "lowest":
 				 lore.add("Lowest-repulsion");
+				 name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Repulsion.Lowest");
 				 break;
 		 }
 		 ballMeta.setLore(lore);

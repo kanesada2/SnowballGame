@@ -113,9 +113,8 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 					}else if(!(sender instanceof ConsoleCommandSender)){
 						return false;
 					}
-					Bukkit.getLogger().info("Reloading SnowballGame...");
-					plugin.getPluginLoader().disablePlugin(plugin);
-					plugin.getPluginLoader().enablePlugin(plugin);
+					plugin.reloadConfig();
+					Bukkit.getLogger().info("SnowballGame Reloaded!");
 					return true;
 				}else{
 					sender.sendMessage("Unknown command. Please check /sbg");

@@ -136,7 +136,7 @@ public class SnowballGameListener implements Listener {
 					Util.causeKnockBack(player,projectile);
 				}
 			 }
-			 if(event.getHitBlock() != null && projectile.getVelocity().length() > 0.2){
+			 if(event.getHitBlock() != null && projectile.getVelocity().length() > 0.15){
 				Projectile bounced = BallProcess.bounce(projectile,event.getHitBlock());
 				bounced.setMetadata("ballType", new FixedMetadataValue(plugin, projectile.getMetadata("ballType").get(0).asString()));
 				return;

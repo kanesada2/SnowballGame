@@ -21,6 +21,12 @@ Ball:
         Sinker_Name: 'Sinker'
         # the name of the ball which will move your main-hand-side when you pitch it
         Shuuto_Name: 'Shuuto'
+    # the names of the balls which have different repulsion with being hit.
+    Repulsion:
+        Highest: 'Ball'
+        Higher: 'Ball'
+        Lower: 'Ball'
+        Lowest: 'Ball'
 Bat:
     # true/false (If true, players can use custom bow which behave like a bat for baseball.)
     Enabled_Bat: true
