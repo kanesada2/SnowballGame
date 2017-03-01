@@ -29,7 +29,6 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.material.DirectionalContainer;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.projectiles.BlockProjectileSource;
-import org.bukkit.util.Vector;
 
 public class SnowballGameListener implements Listener {
 
@@ -75,8 +74,7 @@ public class SnowballGameListener implements Listener {
 				projectile.setGlowing(true);
 				if(hand.getItemMeta().hasDisplayName()){
 					projectile.setMetadata("moving", new FixedMetadataValue(plugin, hand.getItemMeta().getDisplayName()));
-					Vector moveVector = BallProcess.getMoveVector(projectile, player.getLocation(), isR);
-					new BallMovingTask(projectile, moveVector).runTaskTimer(plugin, 0, 1);
+					new BallProcess(plugin).move(projectile, player.getLocation(), isR);
 				}
 			}
 		}else if(projectile.getShooter() instanceof BlockProjectileSource){
@@ -104,8 +102,7 @@ public class SnowballGameListener implements Listener {
 						facingLoc.setYaw(0);
 						break;
 					}
-					Vector moveVector = BallProcess.getMoveVector(projectile, facingLoc, true);
-					new BallMovingTask(projectile, moveVector).runTaskTimer(plugin, 0, 1);
+					new BallProcess(plugin).move(projectile, facingLoc, true);
 					from.removeMetadata("moving", plugin);
 				}
 			}
@@ -137,8 +134,8 @@ public class SnowballGameListener implements Listener {
 				}
 			 }
 			 if(event.getHitBlock() != null && projectile.getVelocity().length() > 0.15){
-				Projectile bounced = BallProcess.bounce(projectile,event.getHitBlock());
-				bounced.setMetadata("ballType", new FixedMetadataValue(plugin, projectile.getMetadata("ballType").get(0).asString()));
+				new BallProcess(plugin).bounce(projectile,event.getHitBlock());
+
 				return;
 			 }
 			 //Bukkit.getLogger().info(String.valueOf(projectile.getLocation().distance(new Location(projectile.getWorld(), 100,5,100))));
@@ -167,10 +164,7 @@ public class SnowballGameListener implements Listener {
 		Collection <Entity> nearByEntities = impactLoc.getWorld().getNearbyEntities(impactLoc, 1.3, 1.3, 1.3);
 		for (Entity entity : nearByEntities) {
 			if(entity.getType() == EntityType.SNOWBALL && entity.hasMetadata("ballType")){
-				BallProcess.hit((Projectile)entity,impactLoc , force);
-				if(entity.hasMetadata("moving")){
-					 entity.removeMetadata("moving", plugin);
-				 }
+				new BallProcess(plugin).hit((Projectile)entity,impactLoc , force);
 				break;
 			}
 		}

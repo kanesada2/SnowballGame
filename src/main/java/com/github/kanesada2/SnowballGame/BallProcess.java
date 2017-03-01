@@ -7,12 +7,16 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Projectile;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 
 public class BallProcess {
-	private BallProcess() {}
-	public static Projectile bounce(Projectile ball, Block hitBlock){
+	private SnowballGame plugin;
+	public BallProcess(SnowballGame plugin) {
+		this.plugin = plugin;
+	}
+	public void bounce(Projectile ball, Block hitBlock){
 		Vector velocity = ball.getVelocity();
 		Location hitLoc = ball.getLocation();
 		Projectile bounced;
@@ -58,29 +62,32 @@ public class BallProcess {
 				vecToCompare = velocity.clone().setY(0);
 			}
 			double angle = velocity.angle(vecToCompare) / Math.toRadians(90);
-			velocity.setX(x * Math.pow(0.7, angle));
-			velocity.setY(y * Math.pow(0.4, angle));
-			velocity.setZ(z * Math.pow(0.7, angle));
+			velocity.setX(x * Math.pow(0.9, angle));
+			velocity.setY(y * Math.pow(0.6, angle));
+			velocity.setZ(z * Math.pow(0.9, angle));
 			velocity.multiply(Math.pow(1.3, -(velocity.length())));
 		}
 		bounced = (Projectile)hitLoc.getWorld().spawnEntity(hitLoc, EntityType.SNOWBALL);
 		bounced.setVelocity(velocity);
 		bounced.setGlowing(true);
 		bounced.setShooter(ball.getShooter());
-		return bounced;
+		bounced.setMetadata("ballType", new FixedMetadataValue(plugin, ball.getMetadata("ballType").get(0).asString()));
 	}
-	public static void hit(Projectile ball, Location impactLoc, float force){;
+	public void hit(Projectile ball, Location impactLoc, float force){;
+		if(ball.hasMetadata("moving")){
+			ball.removeMetadata("moving", plugin);
+		}
 		Vector velocity = ball.getVelocity();
 		Vector battedVec = ball.getLocation().toVector().subtract(impactLoc.toVector());
 		double power;
-		double coefficient = 2.0D;
-		if(battedVec.length() < 0.05){
+		double coefficient = 1.5D;
+		if(battedVec.length() < 0.06){
 			battedVec.setX(-velocity.getX());
 			battedVec.setY(-velocity.getY());
 			battedVec.setZ(-velocity.getZ());
 			power = force * 50;
 		}else{
-			power = force / Math.pow(battedVec.length(), 1.3);
+			power = force / Math.pow(battedVec.length(), 1.4);
 		}
 		if(force * 2 > velocity.length()){
 			velocity.setX(-velocity.getX());
@@ -91,31 +98,27 @@ public class BallProcess {
 		}
 			switch(ball.getMetadata("ballType").get(0).asString()){
 			case "highest":
-				coefficient = 2.8D;
+				coefficient = coefficient * 1.4 ;
 				break;
 			case "higher":
-				coefficient = 2.4D;
-				break;
-			case "normal":
-				coefficient = 2.0D;
+				coefficient = coefficient * 1.2;
 				break;
 			case "lower":
-				coefficient = 1.6D;
+				coefficient = coefficient * 0.8;
 				break;
 			case "lowest":
-				coefficient = 1.2D;
-				break;
-			default:
-				coefficient = 2.0D;
+				coefficient = coefficient * 0.6;
 				break;
 			}
 		battedVec.multiply(power * coefficient);
 		velocity = velocity.add(battedVec);
+		ball.setMetadata("moving",new FixedMetadataValue(plugin, "batted"));
+		new BallMovingTask(ball, battedVec.clone().normalize().multiply(0.005 * force)).runTaskTimer(plugin, 0, 1);
 		ball.setGravity(true);
 		ball.setVelocity(velocity);
 		impactLoc.getWorld().playSound(impactLoc, Sound.ENTITY_ENDERDRAGON_FIREBALL_EXPLODE , force, 1);
 	}
-	public static Vector getMoveVector(Projectile ball, Location directionLoc, boolean isR){
+	public void move(Projectile ball, Location directionLoc, boolean isR){
 		String moveType = ball.getMetadata("moving").get(0).asString();
 		Vector velocity = ball.getVelocity();
 		Vector moveVector = new Vector(0,0,0);
@@ -127,6 +130,7 @@ public class BallProcess {
 		}
 		if(moveType.equalsIgnoreCase(SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Move.Fastball_Name"))){
 			velocity.multiply(1.1);
+			moveVector.setY(0.01);
 		}else if(moveType.equalsIgnoreCase(SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Move.Slider_Name"))){
 			directionLoc.setYaw(directionLoc.getYaw() - 90);
 			moveVector = directionLoc.getDirection().normalize().multiply(moved);
@@ -149,6 +153,6 @@ public class BallProcess {
 			moveVector.setY(-0.005);
 		}
 		ball.setVelocity(velocity);
-		return moveVector;
+		new BallMovingTask(ball, moveVector).runTaskTimer(plugin, 0, 1);
 	}
 }
