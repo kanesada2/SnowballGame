@@ -5,6 +5,7 @@ import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Projectile;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -112,47 +113,35 @@ public class BallProcess {
 			}
 		battedVec.multiply(power * coefficient);
 		velocity = velocity.add(battedVec);
-		ball.setMetadata("moving",new FixedMetadataValue(plugin, "batted"));
-		new BallMovingTask(ball, battedVec.clone().normalize().multiply(0.005 * force)).runTaskTimer(plugin, 0, 1);
-		ball.setGravity(true);
-		ball.setVelocity(velocity);
+		ball.remove();
+		Projectile hitball = (Projectile)ball.getWorld().spawnEntity(ball.getLocation(), EntityType.SNOWBALL);
+		hitball.setMetadata("moving",new FixedMetadataValue(plugin, "batted"));
+		new BallMovingTask(hitball, battedVec.clone().normalize().multiply(0.005 * force)).runTaskTimer(plugin, 0, 1);
+		hitball.setGravity(true);
+		hitball.setGlowing(true);
+		hitball.setVelocity(velocity);
+		hitball.setMetadata("ballType", new FixedMetadataValue(plugin, ball.getMetadata("ballType").get(0).asString()));
 		impactLoc.getWorld().playSound(impactLoc, Sound.ENTITY_ENDERDRAGON_FIREBALL_EXPLODE , force, 1);
 	}
 	public void move(Projectile ball, Location directionLoc, boolean isR){
 		String moveType = ball.getMetadata("moving").get(0).asString();
 		Vector velocity = ball.getVelocity();
 		Vector moveVector = new Vector(0,0,0);
-		double moved;
+		FileConfiguration config = SnowballGame.getPlugin(SnowballGame.class).getConfig();
+		int moved;
 		if(isR){
-			moved = 0.02;
+			moved = 1;
 		}else{
-			moved = -0.02;
+			moved = -1;
 		}
-		if(moveType.equalsIgnoreCase(SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Move.Fastball_Name"))){
-			velocity.multiply(1.1);
-			moveVector.setY(0.01);
-		}else if(moveType.equalsIgnoreCase(SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Move.Slider_Name"))){
-			directionLoc.setYaw(directionLoc.getYaw() - 90);
-			moveVector = directionLoc.getDirection().normalize().multiply(moved);
-			moveVector.setY(-0.005);
-		}else if(moveType.equalsIgnoreCase(SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Move.Curve_Name"))){
-			velocity.multiply(0.9);
-			directionLoc.setYaw(directionLoc.getYaw() - 90);
-			moveVector = directionLoc.getDirection().normalize().multiply(moved);
-			moveVector.setY(-0.02);
-		}else if(moveType.equalsIgnoreCase(SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Move.Folk_Name"))){
-			moveVector.setY(-0.02);
-		}else if(moveType.equalsIgnoreCase(SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Move.Sinker_Name"))){
-			velocity.multiply(0.9);
+		if(config.getStringList("Ball.Move.Type").contains(moveType)){
+			String section = "Ball.Move." + moveType;
+			velocity.multiply(config.getDouble(section + ".Velocity"));
 			directionLoc.setYaw(directionLoc.getYaw() + 90);
-			moveVector = directionLoc.getDirection().normalize().multiply(moved);
-			moveVector.setY(-0.02);
-		}else if(moveType.equalsIgnoreCase(SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Move.Shuuto_Name"))){
-			directionLoc.setYaw(directionLoc.getYaw() + 90);
-			moveVector = directionLoc.getDirection().normalize().multiply(moved);
-			moveVector.setY(-0.005);
+			moveVector = directionLoc.getDirection().normalize().multiply(moved * config.getDouble(section + ".Horizontal"));
+			moveVector.setY(config.getDouble(section + ".Vertical"));
+			ball.setVelocity(velocity);
+			new BallMovingTask(ball, moveVector).runTaskTimer(plugin, 0, 1);
 		}
-		ball.setVelocity(velocity);
-		new BallMovingTask(ball, moveVector).runTaskTimer(plugin, 0, 1);
 	}
 }

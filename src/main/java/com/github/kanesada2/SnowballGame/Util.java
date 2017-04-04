@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -13,6 +15,7 @@ import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Snowball;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
+import org.bukkit.inventory.ShapelessRecipe;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 
@@ -28,11 +31,50 @@ public final class Util {
 				player.damage(1);
 				player.setHealth(health);
 			}
-			Vector knockbackVec = projectile.getVelocity().multiply(0.6);
+			Vector knockbackVec = projectile.getVelocity().multiply(0.5);
 			if(knockbackVec.getY() < 0.3){
 				knockbackVec.setY(0.3);
 			}
 			player.setVelocity(knockbackVec);
+	 }
+	 public static String addColors(String input) {
+	        input = input.replaceAll("\\Q[[BLACK]]\\E", ChatColor.BLACK.toString());
+	        input = input.replaceAll("\\Q[[DARK_BLUE]]\\E", ChatColor.DARK_BLUE.toString());
+	        input = input.replaceAll("\\Q[[DARK_GREEN]]\\E", ChatColor.DARK_GREEN.toString());
+	        input = input.replaceAll("\\Q[[DARK_AQUA]]\\E", ChatColor.DARK_AQUA.toString());
+	        input = input.replaceAll("\\Q[[DARK_RED]]\\E", ChatColor.DARK_RED.toString());
+	        input = input.replaceAll("\\Q[[DARK_PURPLE]]\\E", ChatColor.DARK_PURPLE.toString());
+	        input = input.replaceAll("\\Q[[GOLD]]\\E", ChatColor.GOLD.toString());
+	        input = input.replaceAll("\\Q[[GRAY]]\\E", ChatColor.GRAY.toString());
+	        input = input.replaceAll("\\Q[[DARK_GRAY]]\\E", ChatColor.DARK_GRAY.toString());
+	        input = input.replaceAll("\\Q[[BLUE]]\\E", ChatColor.BLUE.toString());
+	        input = input.replaceAll("\\Q[[GREEN]]\\E", ChatColor.GREEN.toString());
+	        input = input.replaceAll("\\Q[[AQUA]]\\E", ChatColor.AQUA.toString());
+	        input = input.replaceAll("\\Q[[RED]]\\E", ChatColor.RED.toString());
+	        input = input.replaceAll("\\Q[[LIGHT_PURPLE]]\\E", ChatColor.LIGHT_PURPLE.toString());
+	        input = input.replaceAll("\\Q[[YELLOW]]\\E", ChatColor.YELLOW.toString());
+	        input = input.replaceAll("\\Q[[WHITE]]\\E", ChatColor.WHITE.toString());
+	        input = input.replaceAll("\\Q[[BOLD]]\\E", ChatColor.BOLD.toString());
+	        input = input.replaceAll("\\Q[[UNDERLINE]]\\E", ChatColor.UNDERLINE.toString());
+	        input = input.replaceAll("\\Q[[ITALIC]]\\E", ChatColor.ITALIC.toString());
+	        input = input.replaceAll("\\Q[[STRIKE]]\\E", ChatColor.STRIKETHROUGH.toString());
+	        input = input.replaceAll("\\Q[[MAGIC]]\\E", ChatColor.MAGIC.toString());
+	        input = input.replaceAll("\\Q[[RESET]]\\E", ChatColor.RESET.toString());
+	        return input;
+	 }
+	 public static void broadcastRange(SnowballGame plugin, Player sender, String msg, int range){
+		 if(range > 0){
+			 range *= range;
+	         Location location = sender.getLocation();
+	         List<Player> players = sender.getWorld().getPlayers();
+	         	for (Player player : players) {
+	         		if (location.distanceSquared(player.getLocation()) <= range) {
+	         			player.sendMessage(msg);
+	                }
+	            }
+		}else{
+			plugin.getServer().broadcastMessage(msg);
+		}
 	 }
 	 public static boolean doesRegardUp(Block block){
 		 List <Material> excluded = Data.regardUpList();
@@ -63,6 +105,9 @@ public final class Util {
 	 }
 	 public static boolean isGlove(ItemStack item){
 		 return isMyItem(item) && item.getType() == Material.LEATHER;
+	 }
+	 public static boolean isUmpire(ItemStack item){
+		 return isMyItem(item) && item.getType() == Material.ARMOR_STAND;
 	 }
 	 public static ItemStack getBall(String type){
 		 ItemStack ball = new ItemStack(Material.SNOW_BALL);
@@ -118,6 +163,18 @@ public final class Util {
 		 glove.setItemMeta(gloveMeta);
 		 return glove;
 	 }
+	 public static ItemStack getUmpire(){
+		 ItemStack umpire = new ItemStack(Material.ARMOR_STAND);
+		 ItemMeta umpireMeta = umpire.getItemMeta();
+		 List<String> lore = new ArrayList<String>();
+		 lore.add("SnowballGame Item");
+		 lore.add("Umpire");
+		 umpireMeta.setLore(lore);
+		 String name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Umpire.Umpire_Name");
+		 umpireMeta.setDisplayName(name);
+		 umpire.setItemMeta(umpireMeta);
+		 return umpire;
+	 }
 	 public static ShapedRecipe getBallRecipe(String type){
 		 ItemStack ball = getBall(type);
 		 ball.setAmount(4);
@@ -156,6 +213,13 @@ public final class Util {
 		 gloveRecipe.shape("LLL","LLL"," L ");
 		 gloveRecipe.setIngredient('L', Material.LEATHER);
 		 return gloveRecipe;
+	 }
+	 public static ShapelessRecipe getUmpireRecipe(){
+		 ItemStack umpire = getUmpire();
+		 ShapelessRecipe umpireRecipe = new ShapelessRecipe(umpire);
+		 umpireRecipe.addIngredient(1, Material.ARMOR_STAND);
+		 umpireRecipe.addIngredient(1, Material.OBSERVER);
+		 return umpireRecipe;
 	 }
 	 public static String getBallType(List <String> lore){
 		 String ballType = "";

@@ -46,6 +46,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 					completions.add("Ball");
 					completions.add("Bat");
 		            completions.add("Glove");
+		            completions.add("Umpire");
 				}else {
 		            if("Ball".startsWith(args[1])){
 		            	completions.add("Ball");
@@ -55,6 +56,9 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 		            }
 		            if("Glove".startsWith(args[1])){
 		            	completions.add("Glove");
+		            }
+		            if("Umpire".startsWith(args[1])){
+		            	completions.add("Umpire");
 		            }
 		        }
 		       }
@@ -141,6 +145,8 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 					item = Util.getBat();
 				}else if(args[1].equalsIgnoreCase("Glove")){
 					item = Util.getGlove();
+				}else if(args[1].equalsIgnoreCase("Umpire")){
+					item = Util.getUmpire();
 				}else{
 					sender.sendMessage("SnowballGame can't provide such a item.");
 					return false;

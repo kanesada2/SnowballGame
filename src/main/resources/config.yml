@@ -9,18 +9,42 @@ Ball:
     # 'BallName' (Default name to display for the custom snowball)
     Ball_Name: 'Ball'
     Move:
-        # the name of the ball which will get faster speed than normal one when you pitch it
-        Fastball_Name: 'Fast'
-        # the name of the ball which will move your off-hand-side when you pitch it
-        Slider_Name: 'Slider'
-        # the name of the ball which will move your off-hand-side and drop down when you pitch it
-        Curve_Name: 'Curve'
-        # the name of the ball which will drop down when you pitch it
-        Folk_Name: 'Folk'
-        # the name of the ball which will move your main-hand-side and drop down when you pitch it
-        Sinker_Name: 'Sinker'
-        # the name of the ball which will move your main-hand-side when you pitch it
-        Shuuto_Name: 'Shuuto'
+        # The type of moving balls.
+        Type:
+          - 'Fast'
+          - 'Slider'
+          - 'Curve'
+          - 'Folk'
+          - 'Sinker'
+          - 'Shuuto'
+        # The feature of each type of moving balls defined above lines.
+        # Velocity: positive number which will be multiplied by default ball's velocity(the default is about 108-110km/h.)
+        # Vertical: the vertical movement of the ball. the positive value makes the ball move up.
+        # Horizontal: the horizontal movement of the ball. the positive value means the direction of your main-hand side.
+        Fast:
+            Velocity: 1.1
+            Vertical: 0.01
+            Horizontal: 0
+        Slider:
+            Velocity: 1
+            Vertical: -0.005
+            Horizontal: -0.02
+        Curve:
+            Velocity: 0.9
+            Vertical: -0.02
+            Horizontal: -0.02
+        Folk:
+            Velocity: 1
+            Vertical: -0.02
+            Horizontal: 0
+        Sinker:
+            Velocity: 0.9
+            Vertical: -0.005
+            Horizontal: 0.02
+        Shuuto:
+            Velocity: 1
+            Vertical: -0.02
+            Horizontal: 0.02
     # the names of the balls which have different repulsion with being hit.
     Repulsion:
         Highest: 'Ball'
@@ -37,3 +61,42 @@ Glove:
     Enabled_Glove: true
     # 'GloveName' (Default name to display for the custom leather)
     Glove_Name: 'Glove'
+Umpire:
+    # true/false (If true, players can summon custom Armor_Stand which call "Strike" when the ball through Strike-zone.)
+    Enabled_Umpire: true
+    # 'UmpireName' (Default name to display for the custom Armor_Stand)
+    Umpire_Name: 'Umpire'
+    # the height(from the ground) of the top of the strike-zone.
+    Top: 1.7
+    # the height(from the ground) of the bottom of the strike-zone.
+    Bottom: 0.4
+Broadcast:
+   # About the message of swinging a bat.
+   Swing:
+       Enabled: true
+       Range: 50
+       Message: '[[YELLOW]][[BOLD]]*** [[PLAYER]] SWINGS ***'
+   # About the message of trying to bunt(swing gently)
+   Bunt:
+       Enabled: true
+       Range: 50
+       Message: '[[GREEN]][[BOLD]]*** [[PLAYER]] TRIES TO BUNT ***'
+   # About the message of hitting a ball with a bat.
+   Hit:
+       Enabled: true
+       Range: 100
+       Message: '[[DARK_RED]][[BOLD]]*** [[PLAYER]] HITS THE BALL ***'
+   # About the message of tagging a runner (hit a runner with a ball in main-hand)
+   Tag:
+       Enabled: true
+       Range: 50
+       Message: '[[BLUE]][[BOLD]]*** [[PLAYER]] TAGS [[RUNNER]] ***'
+   # About the message of catching a batted-ball in flight.
+   Catch:
+       Enabled: true
+       Range: 100
+       Message: '[[LIGHT_PURPLE]][[BOLD]]*** [[PLAYER]] CATCHES THE BALL ***'
+   # About the message of "Strike" call.
+   Strike:
+       Range: 100
+       Message: '[[YELLOW]][[BOLD]]*** STRIKE [[SPEED]] [[TYPE]] ***'

@@ -19,6 +19,16 @@ public class SnowballGame extends JavaPlugin implements Listener{
         registerCustomRecipes();
         commandExecutor = new SnowballGameCommandExecutor(this);
         getCommand("SnowballGame").setExecutor(commandExecutor);
+        this.getConfig().set("Ball.Move.Fastball_Name", null);
+        this.getConfig().set("Ball.Move.Slider_Name", null);
+        this.getConfig().set("Ball.Move.Curve_Name", null);
+        this.getConfig().set("Ball.Move.Folk_Name", null);
+        this.getConfig().set("Ball.Move.Sinker_Name", null);
+        this.getConfig().set("Ball.Move.Shuuto_Name", null);
+        this.getConfig().set("Broadcast.Enabled_Broadcast", null);
+		this.getConfig().set("Broadcast.Range", null);
+		this.getConfig().set("Broadcast.Message_Swing", null);
+		this.getConfig().set("Broadcast.Message_Bunt", null);
         this.getConfig().options().copyDefaults(true);
         this.saveConfig();
         getLogger().info("SnowballGame Enabled!");
@@ -37,6 +47,7 @@ public class SnowballGame extends JavaPlugin implements Listener{
     	getServer().addRecipe(Util.getBallRecipe("lowest"));
     	getServer().addRecipe(Util.getBatRecipe());
     	getServer().addRecipe(Util.getGloveRecipe());
+    	getServer().addRecipe(Util.getUmpireRecipe());
     	getLogger().info("Custom Recipe Enabled!");
     }
 }
