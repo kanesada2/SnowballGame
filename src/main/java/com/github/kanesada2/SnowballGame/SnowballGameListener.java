@@ -1,7 +1,6 @@
 package com.github.kanesada2.SnowballGame;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -16,15 +15,14 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Snowball;
-import org.bukkit.entity.Snowman;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDispenseEvent;
-import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
@@ -34,8 +32,6 @@ import org.bukkit.inventory.MainHand;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.material.DirectionalContainer;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.BlockProjectileSource;
 import org.bukkit.util.Vector;
 
@@ -82,6 +78,14 @@ public class SnowballGameListener implements Listener {
 				projectile.setMetadata("ballType", new FixedMetadataValue(plugin, Util.getBallType(hand.getItemMeta().getLore())));
 				projectile.setGlowing(true);
 				projectile.setVelocity(projectile.getVelocity().add(player.getVelocity()));
+				Collection<Entity> entities = projectile.getNearbyEntities(20, 10, 20);
+				for (Entity entity : entities) {
+					if(entity instanceof ArmorStand && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Umpire.Umpire_Name"))){
+						Location inBottom = entity.getLocation().add(new Vector(-0.5, plugin.getConfig().getDouble("Umpire.Bottom"), -0.5));
+						Location outTop = entity.getLocation().add(new Vector(0.5, plugin.getConfig().getDouble("Umpire.Top") , 0.5));
+						new BallJudgeTask(projectile, inBottom, outTop, plugin).runTaskTimer(plugin, 0, 1);
+					}
+				}
 				if(hand.getItemMeta().hasDisplayName()){
 					projectile.setMetadata("moving", new FixedMetadataValue(plugin, hand.getItemMeta().getDisplayName()));
 					new BallProcess(plugin).move(projectile, player.getLocation(), isR);
@@ -116,6 +120,14 @@ public class SnowballGameListener implements Listener {
 					Vector velocity = projectile.getVelocity();
 					double speed = velocity.length();
 					projectile.setVelocity(velocity.getMidpoint(validVec).normalize().multiply(speed));
+					Collection<Entity> entities = projectile.getNearbyEntities(20, 10, 20);
+					for (Entity entity : entities) {
+						if(entity instanceof ArmorStand && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Umpire.Umpire_Name"))){
+							Location inBottom = entity.getLocation().add(new Vector(-0.5, plugin.getConfig().getDouble("Umpire.Bottom"), -0.5));
+							Location outTop = entity.getLocation().add(new Vector(0.5, plugin.getConfig().getDouble("Umpire.Top") , 0.5));
+							new BallJudgeTask(projectile, inBottom, outTop, plugin).runTaskTimer(plugin, 0, 1);
+						}
+					}
 					new BallProcess(plugin).move(projectile, facingLoc, true);
 					from.removeMetadata("moving", plugin);
 				}
@@ -155,38 +167,6 @@ public class SnowballGameListener implements Listener {
 			 if(event.getHitBlock() != null && projectile.getVelocity().length() > 0.15){
 				new BallProcess(plugin).bounce(projectile,event.getHitBlock());
 				return;
-			 }
-			 if(event.getHitEntity() instanceof Snowman && event.getHitEntity().getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Umpire.Umpire_Name"))){
-				 Snowman pl = (Snowman)event.getHitEntity();
-				 Location location = projectile.getLocation();
-				 double top = pl.getLocation().getBlockY() + plugin.getConfig().getDouble("Umpire.Top");
-				 double bottom = pl.getLocation().getBlockY() + plugin.getConfig().getDouble("Umpire.Bottom");
-				 if(top >= projectile.getLocation().getY() && projectile.getLocation().getY() >= bottom && moving != ""){
-					 String msg = plugin.getConfig().getString("Broadcast.Strike.Message");
-					 msg = Util.addColors(msg);
-					 msg = msg.replaceAll("\\Q[[SPEED]]\\E", String.valueOf(Math.round(projectile.getVelocity().length() * 720) / 10) + "km/h");
-					 msg = msg.replaceAll("\\Q[[TYPE]]\\E", moving);
-					 if(plugin.getConfig().getInt("Broadcast.Strike.Range") > 0){
-						 int range = (int)Math.pow((double)plugin.getConfig().getInt("Broadcast.Strike.Range"),2);
-				         List<Player> players = projectile.getWorld().getPlayers();
-				         	for (Player player : players) {
-				         		if (location.distanceSquared(player.getLocation()) <= range) {
-				         			player.sendMessage(msg);
-				                }
-				            }
-					}else{
-						plugin.getServer().broadcastMessage(msg);
-					}
-					}
-				 new UmpireResetTask(pl).runTaskLater(plugin, 20);
-				 pl.setCollidable(false);
-				 Projectile throughed = (Projectile)location.getWorld().spawnEntity(location, EntityType.SNOWBALL);
-				 throughed.setVelocity(projectile.getVelocity());
-				 throughed.setGlowing(true);
-				 throughed.setShooter(projectile.getShooter());
-				 throughed.setMetadata("ballType", new FixedMetadataValue(plugin, projectile.getMetadata("ballType").get(0).asString()));
-
-				 return;
 			 }
 			 projectile.getWorld().dropItem(projectile.getLocation(), ball);
 			} else {
@@ -282,12 +262,6 @@ public class SnowballGameListener implements Listener {
 			}
 			hand.setAmount(hand.getAmount() - 1);
 		}
-		if(event.hasItem() && Util.isUmpire(event.getItem())){
-			if(!(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK)){
-				return;
-			}
-			event.getPlayer().setMetadata("isUmpireSetter", new FixedMetadataValue(plugin,true));
-		}
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void onTagged(EntityDamageByEntityEvent event){
@@ -310,36 +284,36 @@ public class SnowballGameListener implements Listener {
 		}
 	}
 	@EventHandler(priority = EventPriority.LOW)
-	public void onUmpireSpawn(CreatureSpawnEvent event){
-		if(!(event.getEntity() instanceof ArmorStand && plugin.getConfig().getBoolean("Umpire.Enabled_Umpire"))){
+	public void onBasePlaced(BlockPlaceEvent event){
+		if(!(Util.isUmpire(event.getItemInHand()) && plugin.getConfig().getBoolean("Umpire.Enabled_Umpire"))){
 			return;
 		}
-		Collection <Entity> nearByEntities = event.getEntity().getNearbyEntities(10, 10, 10);
-		for (Entity entity : nearByEntities) {
-			if(entity instanceof Player && entity.hasMetadata("isUmpireSetter")){
-				event.setCancelled(true);
-				Snowman pl = (Snowman)event.getLocation().getWorld().spawnEntity(event.getLocation(), EntityType.SNOWMAN);
-				pl.setCustomName(plugin.getConfig().getString("Umpire.Umpire_Name"));
-				pl.setCustomNameVisible(true);
-				pl.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 0));
-				pl.setAI(false);
-				entity.removeMetadata("isUmpireSetter", plugin);
-				return;
+		Location location = event.getBlock().getLocation().add(new Vector(0.5, 1, 0.5));
+		ArmorStand pl = (ArmorStand)location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
+		pl.setCustomName(plugin.getConfig().getString("Umpire.Umpire_Name"));
+		pl.setCustomNameVisible(true);
+		pl.setVisible(false);
+		pl.setCollidable(false);
+		pl.setInvulnerable(true);
+		pl.setMarker(true);
+		pl.setGravity(false);
+	}
+	@EventHandler(priority = EventPriority.LOW)
+	public void onBaseBroken(BlockBreakEvent event){
+		if(!(event.getBlock().getType() == Material.QUARTZ_BLOCK)){
+			return;
+		}
+		Block quartz = event.getBlock();
+		Collection <Entity> entities = quartz.getWorld().getNearbyEntities(quartz.getLocation(), 3, 3, 3);
+		for (Entity entity : entities) {
+			if(entity instanceof ArmorStand){
+				entity.remove();
+				if(quartz.getDrops().contains(Material.QUARTZ_BLOCK)){
+					quartz.getDrops().remove(Material.QUARTZ_BLOCK);
+				}
+				quartz.getWorld().dropItemNaturally(quartz.getLocation(), Util.getUmpire());
+			break;
 			}
-		}
-	}
-	@EventHandler(priority = EventPriority.LOW)
-	public void onUmpireDamaged(EntityDamageEvent event){
-		if(event.getEntity() instanceof Snowman && event.getEntity().getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Umpire.Umpire_Name"))){
-			event.setCancelled(true);
-		}
-	}
-	@EventHandler(priority = EventPriority.LOW)
-	public void onUmpireDamagedByPlayer(EntityDamageByEntityEvent event){
-		if(event.getEntity() instanceof Snowman && event.getEntity().getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Umpire.Umpire_Name")) && event.getDamager() instanceof Player){
-			Snowman pl = (Snowman)event.getEntity();
-			pl.remove();
-			pl.getWorld().dropItem(pl.getLocation(), Util.getUmpire());
 		}
 	}
 }

@@ -10,6 +10,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Snowball;
@@ -62,7 +63,7 @@ public final class Util {
 	        input = input.replaceAll("\\Q[[RESET]]\\E", ChatColor.RESET.toString());
 	        return input;
 	 }
-	 public static void broadcastRange(SnowballGame plugin, Player sender, String msg, int range){
+	 public static void broadcastRange(SnowballGame plugin, Entity sender, String msg, int range){
 		 if(range > 0){
 			 range *= range;
 	         Location location = sender.getLocation();
@@ -107,7 +108,7 @@ public final class Util {
 		 return isMyItem(item) && item.getType() == Material.LEATHER;
 	 }
 	 public static boolean isUmpire(ItemStack item){
-		 return isMyItem(item) && item.getType() == Material.ARMOR_STAND;
+		 return isMyItem(item) && item.getType() == Material.QUARTZ_BLOCK;
 	 }
 	 public static ItemStack getBall(String type){
 		 ItemStack ball = new ItemStack(Material.SNOW_BALL);
@@ -164,7 +165,7 @@ public final class Util {
 		 return glove;
 	 }
 	 public static ItemStack getUmpire(){
-		 ItemStack umpire = new ItemStack(Material.ARMOR_STAND);
+		 ItemStack umpire = new ItemStack(Material.QUARTZ_BLOCK);
 		 ItemMeta umpireMeta = umpire.getItemMeta();
 		 List<String> lore = new ArrayList<String>();
 		 lore.add("SnowballGame Item");
@@ -217,7 +218,7 @@ public final class Util {
 	 public static ShapelessRecipe getUmpireRecipe(){
 		 ItemStack umpire = getUmpire();
 		 ShapelessRecipe umpireRecipe = new ShapelessRecipe(umpire);
-		 umpireRecipe.addIngredient(1, Material.ARMOR_STAND);
+		 umpireRecipe.addIngredient(1, Material.QUARTZ_BLOCK);
 		 umpireRecipe.addIngredient(1, Material.OBSERVER);
 		 return umpireRecipe;
 	 }

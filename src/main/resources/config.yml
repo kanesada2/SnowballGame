@@ -69,7 +69,7 @@ Umpire:
     # the height(from the ground) of the top of the strike-zone.
     Top: 1.7
     # the height(from the ground) of the bottom of the strike-zone.
-    Bottom: 0.4
+    Bottom: 0.5
 Broadcast:
    # About the message of swinging a bat.
    Swing:
