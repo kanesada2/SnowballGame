@@ -8,8 +8,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -110,6 +113,9 @@ public final class Util {
 	 public static boolean isUmpire(ItemStack item){
 		 return isMyItem(item) && item.getType() == Material.QUARTZ_BLOCK;
 	 }
+	 public static boolean isCoach(ItemStack item){
+		 return isMyItem(item) && item.getType() == Material.ARMOR_STAND;
+	 }
 	 public static ItemStack getBall(String type){
 		 ItemStack ball = new ItemStack(Material.SNOW_BALL);
 		 ItemMeta ballMeta = ball.getItemMeta();
@@ -176,6 +182,18 @@ public final class Util {
 		 umpire.setItemMeta(umpireMeta);
 		 return umpire;
 	 }
+	 public static ItemStack getCoach(){
+		 ItemStack coach = new ItemStack(Material.ARMOR_STAND);
+		 ItemMeta coachMeta = coach.getItemMeta();
+		 List<String> lore = new ArrayList<String>();
+		 lore.add("SnowballGame Item");
+		 lore.add("coach");
+		 coachMeta.setLore(lore);
+		 String name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Coach.Coach_Name");
+		 coachMeta.setDisplayName(name);
+		 coach.setItemMeta(coachMeta);
+		 return coach;
+	 }
 	 public static ShapedRecipe getBallRecipe(String type){
 		 ItemStack ball = getBall(type);
 		 ball.setAmount(4);
@@ -222,6 +240,13 @@ public final class Util {
 		 umpireRecipe.addIngredient(1, Material.OBSERVER);
 		 return umpireRecipe;
 	 }
+	 public static ShapelessRecipe getCoachRecipe(){
+		 ItemStack coach = getCoach();
+		 ShapelessRecipe coachRecipe = new ShapelessRecipe(coach);
+		 coachRecipe.addIngredient(1, Material.ARMOR_STAND);
+		 coachRecipe.addIngredient(1, Material.DISPENSER);
+		 return coachRecipe;
+	 }
 	 public static String getBallType(List <String> lore){
 		 String ballType = "";
 		 if(lore.contains("Highest-repulsion")){
@@ -241,5 +266,29 @@ public final class Util {
 		 Collection <Snowball> balls = world.getEntitiesByClass(Snowball.class);
 		 Bukkit.getLogger().info("[SnowballGame] Deleting Balls in " + world.getName() + "...");
 		 balls.forEach(ball -> ball.remove());
+	 }
+	 public static Vector caliculateKnockVector(Player player, ArmorStand knocker){
+		 Vector knockedVec = player.getLocation().toVector().subtract(knocker.getLocation().toVector()).normalize();
+			double distance = Math.sqrt(player.getLocation().distanceSquared(knocker.getLocation()));
+			double randomY = (Math.random() - Math.random()) * (distance / 30);
+			knockedVec.multiply(Math.pow(2.2, -randomY));
+			Vector randomizer = new Vector((Math.random() - Math.random()) / (distance / 8), randomY , (Math.random() - Math.random()) / (distance / 8));
+			knockedVec.add(randomizer);
+			if(knockedVec.angle(knockedVec.clone().setY(0)) > 0.5){
+				knockedVec.multiply(0.7);
+			}
+			knockedVec.multiply(distance / 27);
+			return knockedVec;
+	 }
+	 public static Particle getParticle(ConfigurationSection config){
+		 Particle particle = null;
+		 if(config.contains("Particle")){
+			 try{
+				 particle =  Particle.valueOf(config.getString("Particle"));
+			 }catch(IllegalArgumentException e){
+				 Bukkit.broadcastMessage("The value of " + config.getCurrentPath() +".Particle : "+ config.getString("Particle") + "is invalid!!");
+			 }
+		 }
+		 return particle;
 	 }
 }

@@ -48,6 +48,7 @@ public class SnowballGame extends JavaPlugin implements Listener{
     	getServer().addRecipe(Util.getBatRecipe());
     	getServer().addRecipe(Util.getGloveRecipe());
     	getServer().addRecipe(Util.getUmpireRecipe());
+    	getServer().addRecipe(Util.getCoachRecipe());
     	getLogger().info("Custom Recipe Enabled!");
     }
 }

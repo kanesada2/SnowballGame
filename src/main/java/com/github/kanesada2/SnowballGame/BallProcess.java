@@ -137,11 +137,17 @@ public class BallProcess {
 		if(config.getStringList("Ball.Move.Type").contains(moveType)){
 			String section = "Ball.Move." + moveType;
 			velocity.multiply(config.getDouble(section + ".Velocity"));
+			moveVector = directionLoc.getDirection().normalize().multiply(config.getDouble(section + ".Acceleration", 0));
 			directionLoc.setYaw(directionLoc.getYaw() + 90);
-			moveVector = directionLoc.getDirection().normalize().multiply(moved * config.getDouble(section + ".Horizontal"));
+			moveVector.add(directionLoc.getDirection().normalize().multiply(moved * config.getDouble(section + ".Horizontal")));
 			moveVector.setY(config.getDouble(section + ".Vertical"));
 			ball.setVelocity(velocity);
-			new BallMovingTask(ball, moveVector).runTaskTimer(plugin, 0, 1);
+			if(plugin.getConfig().getBoolean("Particle.MovingBall.Enabled") && Util.getParticle(plugin.getConfig().getConfigurationSection(section)) != null){
+				new BallMovingTask(ball, moveVector, Util.getParticle(plugin.getConfig().getConfigurationSection(section))).runTaskTimer(plugin, 0, 1);
+			}else{
+				new BallMovingTask(ball, moveVector).runTaskTimer(plugin, 0, 1);
+			}
+
 		}
 	}
 }
