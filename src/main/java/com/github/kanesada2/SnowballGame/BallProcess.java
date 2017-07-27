@@ -74,7 +74,7 @@ public class BallProcess {
 		bounced.setShooter(ball.getShooter());
 		bounced.setMetadata("ballType", new FixedMetadataValue(plugin, ball.getMetadata("ballType").get(0).asString()));
 	}
-	public void hit(Projectile ball, Location impactLoc, float force){;
+	public void hit(Projectile ball, Location eye, Location impactLoc, float force, int rolld){;
 		if(ball.hasMetadata("moving")){
 			ball.removeMetadata("moving", plugin);
 		}
@@ -116,12 +116,26 @@ public class BallProcess {
 		ball.remove();
 		Projectile hitball = (Projectile)ball.getWorld().spawnEntity(ball.getLocation(), EntityType.SNOWBALL);
 		hitball.setMetadata("moving",new FixedMetadataValue(plugin, "batted"));
-		new BallMovingTask(hitball, battedVec.clone().normalize().multiply(0.005 * force)).runTaskTimer(plugin, 0, 1);
+		if(plugin.getConfig().getBoolean("Particle.BattedBall_InFlight.Enabled")){
+			new BallMovingTask(hitball, battedVec.clone().normalize().multiply(0.005 * force), Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_InFlight")), 0).runTaskTimer(plugin, 0, 1);
+		}else{
+			new BallMovingTask(hitball, battedVec.clone().normalize().multiply(0.005 * force), 0).runTaskTimer(plugin, 0, 1);
+		}
 		hitball.setGravity(true);
 		hitball.setGlowing(true);
 		hitball.setVelocity(velocity);
 		hitball.setMetadata("ballType", new FixedMetadataValue(plugin, ball.getMetadata("ballType").get(0).asString()));
 		impactLoc.getWorld().playSound(impactLoc, Sound.ENTITY_ENDERDRAGON_FIREBALL_EXPLODE , force, 1);
+		/*
+		 *  Temporary code for logging batted-ball.
+		 */
+		double angle = hitball.getVelocity().angle(hitball.getVelocity().clone().setY(0)) * 57.2958;
+		if(hitball.getVelocity().getY() < 0){
+			angle = -1 * angle;
+		}
+		hitball.setMetadata("ev", new FixedMetadataValue(plugin, String.format("%.1f", hitball.getVelocity().length() * 72 / 1.60934)));
+		hitball.setMetadata("la", new FixedMetadataValue(plugin, String.format("%.1f", angle)));
+		hitball.setMetadata("il", new FixedMetadataValue(plugin, impactLoc));
 	}
 	public void move(Projectile ball, Location directionLoc, boolean isR){
 		String moveType = ball.getMetadata("moving").get(0).asString();
@@ -129,6 +143,7 @@ public class BallProcess {
 		Vector moveVector = new Vector(0,0,0);
 		FileConfiguration config = SnowballGame.getPlugin(SnowballGame.class).getConfig();
 		int moved;
+		double random = 0;
 		if(isR){
 			moved = 1;
 		}else{
@@ -137,15 +152,18 @@ public class BallProcess {
 		if(config.getStringList("Ball.Move.Type").contains(moveType)){
 			String section = "Ball.Move." + moveType;
 			velocity.multiply(config.getDouble(section + ".Velocity"));
+			if(config.getDouble(section + ".Random") != 0){
+				random = config.getDouble(section + ".Random");
+			}
 			moveVector = directionLoc.getDirection().normalize().multiply(config.getDouble(section + ".Acceleration", 0));
 			directionLoc.setYaw(directionLoc.getYaw() + 90);
 			moveVector.add(directionLoc.getDirection().normalize().multiply(moved * config.getDouble(section + ".Horizontal")));
 			moveVector.setY(config.getDouble(section + ".Vertical"));
 			ball.setVelocity(velocity);
 			if(plugin.getConfig().getBoolean("Particle.MovingBall.Enabled") && Util.getParticle(plugin.getConfig().getConfigurationSection(section)) != null){
-				new BallMovingTask(ball, moveVector, Util.getParticle(plugin.getConfig().getConfigurationSection(section))).runTaskTimer(plugin, 0, 1);
+				new BallMovingTask(ball, moveVector, Util.getParticle(plugin.getConfig().getConfigurationSection(section)), random).runTaskTimer(plugin, 0, 1);
 			}else{
-				new BallMovingTask(ball, moveVector).runTaskTimer(plugin, 0, 1);
+				new BallMovingTask(ball, moveVector, random).runTaskTimer(plugin, 0, 1);
 			}
 
 		}

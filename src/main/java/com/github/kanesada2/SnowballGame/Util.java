@@ -286,9 +286,18 @@ public final class Util {
 			 try{
 				 particle =  Particle.valueOf(config.getString("Particle"));
 			 }catch(IllegalArgumentException e){
-				 Bukkit.broadcastMessage("The value of " + config.getCurrentPath() +".Particle : "+ config.getString("Particle") + "is invalid!!");
+				 Bukkit.broadcastMessage("The value of " + config.getCurrentPath() +".Particle:"+ config.getString("Particle") + " is invalid!!");
 			 }
 		 }
 		 return particle;
+	 }
+	 public static Vector getBatmove(Location eye, Location impact, int roll, int rolld, double upper){
+		 eye.setYaw(eye.getYaw() + (float)(90 * rolld));
+		 Vector direction = eye.getDirection().setY(0).normalize();
+		 double theta = Math.abs(roll * 2) + Math.PI * upper;
+		 double x = Math.cos(roll) * direction.normalize().getX() * (theta - Math.sin(theta)) - Math.sin(roll) * direction.normalize().getZ() * (theta - Math.sin(theta));
+		 double y = -(1 - Math.cos(theta));
+		 double z = Math.sin(roll) * direction.normalize().getX() * (theta - Math.sin(theta)) + Math.cos(roll) * direction.normalize().getZ() * (theta - Math.sin(theta));
+		 return new Vector (x,y,z);
 	 }
 }

@@ -169,7 +169,11 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 							if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Coach.Coach_Name"))){
 								Vector knockedVec = Util.caliculateKnockVector(player, (ArmorStand)entity);
 								Projectile batted = ((ProjectileSource)entity).launchProjectile(Snowball.class, knockedVec);
-								new BallMovingTask(batted, knockedVec.multiply(0.003)).runTaskTimer(plugin, 0, 1);
+								if(plugin.getConfig().getBoolean("Particle.BattedBall_InFlight.Enabled")){
+									new BallMovingTask(batted, knockedVec.multiply(0.003), Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_InFlight")), 0).runTaskTimer(plugin, 0, 1);
+								}else{
+									new BallMovingTask(batted, knockedVec.multiply(0.003), 0).runTaskTimer(plugin, 0, 1);
+								}
 								player.sendMessage("Catch the ball!!!");
 								count++;
 							}

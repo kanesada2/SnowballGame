@@ -19,11 +19,13 @@ Ball:
           - 'Folk'
           - 'Sinker'
           - 'Shuuto'
+          - 'Knuckle'
         # The feature of each type of moving balls defined above lines.
         # Velocity: positive number which will be multiplied by default ball's velocity(the default is about 108-110km/h.)
         # Vertical: the vertical movement of the ball. a positive value makes the ball move up.
         # Horizontal: the horizontal movement of the ball. a positive value means the direction of your main-hand side.
         # Acceleration: the acceleration of the ball. If this value is positive, the ball will lose less speed than the ordinal snowball.
+        # Random: the movement with random direction.
         Fast:
             Velocity: 1.1
             Vertical: 0.01
@@ -54,6 +56,12 @@ Ball:
             Vertical: -0.005
             Horizontal: 0.02
             Acceleration: 0
+        Knuckle:
+            Velocity: 0.9
+            Random: 0.02
+            Vertical: -0.02
+            Horizontal: 0
+            Acceleration: -0.02
     # the names of the balls which have different repulsion with being hit.
     Repulsion:
         Highest: 'Ball'
@@ -70,6 +78,22 @@ Glove:
     Enabled_Glove: true
     # 'GloveName' (Default name to display for the custom leather)
     Glove_Name: 'Glove'
+    Custom:
+        Type:
+            - SIDE
+            - SUBMARINE
+        # You can custom your release-point in pitching.A named glove make you other type of pitcher.
+        # Vertical: 0 means the height of your eye. positive value means above.
+        # Horizontal: 0 means the position of your eye. positive value means your main-hand side..
+        # Closeness: Increasing this value means you can pitch from closer to batter.
+        SIDE:
+            Vertical: -0.5
+            Horizontal: 0.3
+            Closeness: 0
+        SUBMARINE:
+            Vertical: -1.3
+            Horizontal: 0
+            Closeness: 0
 Umpire:
     # true/false (If true, players can summon custom Armor_Stand which call "Strike" when the ball through Strike-zone.)
     Enabled_Umpire: true
@@ -120,6 +144,9 @@ Particle:
     Catch_Ball:
         Enabled: false
         Particle: CRIT_MAGIC
+    Throw_Ball:
+        Enabled: false
+        Particle: SNOWBALL
     # When a ball hit to a player.
     Hit_to_Players:
         Enabled: false
@@ -132,7 +159,11 @@ Particle:
     Hit_by_Bat:
         Enabled: false
         Particle: EXPLOSION_LARGE
-    # When a Batted-Ball ground on something at the first time."Time" value means how long the particle will being shown.
+    # During a batted-ball is going in flight.
+    BattedBall_InFlight:
+        Enabled: false
+        Particle: FIREWORKS_SPARK
+    # When a batted-Ball ground on something at the first time."Time" value means how long the particle will being shown.
     BattedBall_Ground:
         Enabled: true
         Particle: SNOW_SHOVEL
