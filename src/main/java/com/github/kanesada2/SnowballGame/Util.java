@@ -12,7 +12,6 @@ import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -267,19 +266,6 @@ public final class Util {
 		 Bukkit.getLogger().info("[SnowballGame] Deleting Balls in " + world.getName() + "...");
 		 balls.forEach(ball -> ball.remove());
 	 }
-	 public static Vector caliculateKnockVector(Player player, ArmorStand knocker){
-		 Vector knockedVec = player.getLocation().toVector().subtract(knocker.getLocation().toVector()).normalize();
-			double distance = Math.sqrt(player.getLocation().distanceSquared(knocker.getLocation()));
-			double randomY = (Math.random() - Math.random()) * (distance / 30);
-			knockedVec.multiply(Math.pow(2.2, -randomY));
-			Vector randomizer = new Vector((Math.random() - Math.random()) / (distance / 8), randomY , (Math.random() - Math.random()) / (distance / 8));
-			knockedVec.add(randomizer);
-			if(knockedVec.angle(knockedVec.clone().setY(0)) > 0.5){
-				knockedVec.multiply(0.7);
-			}
-			knockedVec.multiply(distance / 27);
-			return knockedVec;
-	 }
 	 public static Particle getParticle(ConfigurationSection config){
 		 Particle particle = null;
 		 if(config.contains("Particle")){
@@ -291,9 +277,10 @@ public final class Util {
 		 }
 		 return particle;
 	 }
-	 public static Vector getBatmove(Location eye, Location impact, int roll, int rolld, double upper){
-		 eye.setYaw(eye.getYaw() + (float)(90 * rolld));
-		 Vector direction = eye.getDirection().setY(0).normalize();
+	 public static Vector getBatmove(Location eye, double roll, int rolld, double upper){
+		 Location pushD = eye.clone();
+		 pushD.setYaw(pushD.getYaw() + (float)(90 * rolld));
+		 Vector direction = pushD.getDirection().setY(0).normalize();
 		 double theta = Math.abs(roll * 2) + Math.PI * upper;
 		 double x = Math.cos(roll) * direction.normalize().getX() * (theta - Math.sin(theta)) - Math.sin(roll) * direction.normalize().getZ() * (theta - Math.sin(theta));
 		 double y = -(1 - Math.cos(theta));

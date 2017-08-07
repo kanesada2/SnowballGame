@@ -1,10 +1,7 @@
 package com.github.kanesada2.SnowballGame;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Collection;
 
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -43,7 +40,6 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.projectiles.BlockProjectileSource;
-import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.Vector;
 
 public class SnowballGameListener implements Listener {
@@ -120,7 +116,9 @@ public class SnowballGameListener implements Listener {
 				projectile.setVelocity(old.getVelocity().add(vlModifier));
 				projectile.setShooter(player);
 				projectile.getWorld().playSound(location, Sound.ENTITY_ARROW_SHOOT, 1, 0);
-				projectile.getWorld().spawnParticle(Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Throw_Ball")), location, 3);
+				if(plugin.getConfig().getBoolean("Particle.Throw_Ball.Enabled")){
+					projectile.getWorld().spawnParticle(Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Throw_Ball")), location, 3);
+				}
 				if(hand.getItemMeta().hasDisplayName()){
 					projectile.setMetadata("moving", new FixedMetadataValue(plugin, hand.getItemMeta().getDisplayName()));
 					new BallProcess(plugin).move(projectile, player.getLocation(), isR);
@@ -233,31 +231,11 @@ public class SnowballGameListener implements Listener {
 					cloud.setParticle(Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_Ground")));
 					cloud.setDuration(plugin.getConfig().getInt("Particle.BattedBall_Ground.Time",200));
 					cloud.setRadius(1.5f);
-					/*
-						test lines
-					*/
-					String writing = projectile.getMetadata("la").get(0).asString() + "," + projectile.getMetadata("ev").get(0).asString() + "," + Math.round(event.getHitBlock().getLocation().subtract((Location)projectile.getMetadata("il").get(0).value()).length()) + System.getProperty("line.separator");
-					try{
-					    FileWriter writer = new FileWriter("battedball.csv", true);
-					    writer.write(writing);
-					    writer.close();
-					} catch (IOException e) {
-					   // do something
-						Bukkit.getLogger().info(writing);
-					}
-
-					//
-					}
+				}
 				return;
 			 }else if(event.getHitEntity() instanceof ArmorStand && event.getHitEntity().getCustomName() != null && event.getHitEntity().getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Coach.Coach_Name"))){
 				 if(projectile.getShooter() instanceof Player){
-					 Vector knockedVec = Util.caliculateKnockVector((Player)projectile.getShooter(), (ArmorStand)event.getHitEntity());
-					 Projectile batted = ((ProjectileSource)event.getHitEntity()).launchProjectile(projectile.getClass(), knockedVec);
-					 if(plugin.getConfig().getBoolean("Particle.BattedBall_InFlight.Enabled")){
-						 new BallMovingTask(batted, knockedVec.multiply(0.003), Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_InFlight")), 0).runTaskTimer(plugin, 0, 1);
-					 }else{
-						 new BallMovingTask(batted, knockedVec.multiply(0.003), 0).runTaskTimer(plugin, 0, 1);
-					 }
+					 new BallProcess(plugin).knock((Player)projectile.getShooter(), (ArmorStand)event.getHitEntity());
 					 return;
 				 }
 			 }
@@ -304,6 +282,10 @@ public class SnowballGameListener implements Listener {
 		}
 		for (Entity entity : nearByEntities) {
 			if(entity.getType() == EntityType.SNOWBALL && entity.hasMetadata("ballType")){
+				String bowName = "";
+				if(event.getBow().hasItemMeta() && event.getBow().getItemMeta().hasDisplayName()){
+					bowName = event.getBow().getItemMeta().getDisplayName();
+				}
 				int rolld = 1;
 				if(Util.isBat(player.getInventory().getItemInMainHand())){
 					if(player.getMainHand() == MainHand.LEFT){
@@ -314,7 +296,7 @@ public class SnowballGameListener implements Listener {
 						rolld = -1;
 					}
 				}
-				new BallProcess(plugin).hit((Projectile)entity,player.getEyeLocation(),impactLoc , force, rolld);
+				new BallProcess(plugin).hit((Projectile)entity,player.getEyeLocation(), impactLoc , force, rolld, bowName);
 				if(plugin.getConfig().getBoolean("Broadcast.Hit.Enabled")){
 					msg = plugin.getConfig().getString("Broadcast.Hit.Message");
 					range = plugin.getConfig().getInt("Broadcast.Hit.Range");
@@ -335,6 +317,9 @@ public class SnowballGameListener implements Listener {
 			if(plugin.getConfig().getBoolean("Particle.Swing_Bat.Enabled") && Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Swing_Bat")) != null){
 				player.getWorld().spawnParticle(Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Swing_Bat")), playerLoc, 1);
 			}
+		}
+		if(plugin.getConfig().getBoolean("Parrticle.Swing_Bat_Sequent")){
+
 		}
 	}
 	@EventHandler(priority = EventPriority.LOW)

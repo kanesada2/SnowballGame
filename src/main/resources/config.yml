@@ -73,6 +73,16 @@ Bat:
     Enabled_Bat: true
     # 'BatName' (Default name to display for the custom bow)
     Bat_Name: 'Bat'
+    # You can change your swing by naming special name(set below) to your bat.
+    # Fly: (-1~1) Bigger value means you can hit high-fly easily, and smaller means batted-ball tends to be grounder. Default value is 0.
+    Swing:
+        Type:
+            - UPPER
+            - DOWN
+        UPPER:
+            Fly: 0.3
+        DOWN:
+            Fly: -0.3
 Glove:
     # true/false (If true, players can use custom leather which behave like a bat for baseball.)
     Enabled_Glove: true

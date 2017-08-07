@@ -15,13 +15,9 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Projectile;
-import org.bukkit.entity.Snowball;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
-import org.bukkit.projectiles.ProjectileSource;
-import org.bukkit.util.Vector;
 
 public class SnowballGameCommandExecutor implements CommandExecutor, TabCompleter {
 
@@ -167,14 +163,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 						int count = 0;
 						for(Entity entity : entities){
 							if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Coach.Coach_Name"))){
-								Vector knockedVec = Util.caliculateKnockVector(player, (ArmorStand)entity);
-								Projectile batted = ((ProjectileSource)entity).launchProjectile(Snowball.class, knockedVec);
-								if(plugin.getConfig().getBoolean("Particle.BattedBall_InFlight.Enabled")){
-									new BallMovingTask(batted, knockedVec.multiply(0.003), Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_InFlight")), 0).runTaskTimer(plugin, 0, 1);
-								}else{
-									new BallMovingTask(batted, knockedVec.multiply(0.003), 0).runTaskTimer(plugin, 0, 1);
-								}
-								player.sendMessage("Catch the ball!!!");
+								new BallProcess(plugin).knock(player, (ArmorStand)entity);
 								count++;
 							}
 						}
