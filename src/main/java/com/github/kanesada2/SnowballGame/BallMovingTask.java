@@ -2,6 +2,7 @@ package com.github.kanesada2.SnowballGame;
 
 import org.bukkit.Particle;
 import org.bukkit.entity.Projectile;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
@@ -24,6 +25,7 @@ public class BallMovingTask extends BukkitRunnable {
         	this.z = Math.random() * 2 * Math.PI;
         }
         this.moveVector = moveVector;
+        ball.setMetadata("moveFromSpin", new FixedMetadataValue(SnowballGame.getPlugin(SnowballGame.class), moveVector.clone().multiply(10)));
     }
 	public BallMovingTask(Projectile ball, Vector moveVector, double random) {
         this.ball = ball;
@@ -37,6 +39,7 @@ public class BallMovingTask extends BukkitRunnable {
         	this.z = Math.random() * 2 * Math.PI;
         }
         this.moveVector = moveVector;
+        ball.setMetadata("moveFromSpin", new FixedMetadataValue(SnowballGame.getPlugin(SnowballGame.class), moveVector.clone().multiply(10)));
 	}
     @Override
     public void run() {
@@ -44,12 +47,14 @@ public class BallMovingTask extends BukkitRunnable {
     		this.cancel();
     	}
     	Vector velocity = ball.getVelocity();
-    	actualMove = spinVector.getCrossProduct(velocity);
-    	if(ball.hasMetadata("isPitched")){
-    		actualMove.add(velocity.clone().normalize().multiply(Math.cos(angle)));
+    	if(moveVector.length() > 0){
+	    	actualMove = spinVector.getCrossProduct(velocity);
+	    	if(ball.hasMetadata("isPitched")){
+	    		actualMove.add(velocity.clone().normalize().multiply(Math.cos(angle)));
+	    	}
+	    	actualMove.normalize().multiply(moveVector.length());
+	    	velocity.add(actualMove);
     	}
-    	actualMove.normalize().multiply(moveVector.length());
-    	velocity.add(actualMove);
     	if(random != 0){
         	this.x += Math.random() * 0.3;
         	this.y += Math.random() * 0.3;

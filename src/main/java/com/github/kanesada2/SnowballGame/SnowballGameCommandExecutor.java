@@ -160,16 +160,15 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 							return false;
 						}
 						Collection <Entity> entities = player.getNearbyEntities(100, 10, 100);
-						int count = 0;
+						if(entities.isEmpty()){
+							player.sendMessage("You are too far from your coach to practice.");
+							return false;
+						}
 						for(Entity entity : entities){
 							if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Coach.Coach_Name"))){
 								new BallProcess(plugin).knock(player, (ArmorStand)entity);
-								count++;
+								break;
 							}
-						}
-						if(count == 0){
-							player.sendMessage("You are too far from your coach to practice.");
-							return false;
 						}
 						player.setMetadata("onMotion", new FixedMetadataValue(plugin, true));
 						new PlayerCoolDownTask(plugin, player).runTaskLater(plugin, plugin.getConfig().getInt("Ball.Cool_Time", 30));

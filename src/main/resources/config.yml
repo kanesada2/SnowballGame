@@ -165,6 +165,10 @@ Particle:
     Swing_Bat:
         Enabled: true
         Particle: SWEEP_ATTACK
+    # If true, the particle will track your swing(But it's just a guide.)
+    Swing_Bat_Sequent:
+        Enabled: false
+        Particle: VILLAGER_HAPPY
     # When a player slugs a ball with his bat.
     Hit_by_Bat:
         Enabled: false

@@ -2,6 +2,7 @@ package com.github.kanesada2.SnowballGame;
 
 import java.util.Collection;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -168,7 +169,7 @@ public class SnowballGameListener implements Listener {
 					Vector validVec = from.getRelative(fromdata.getFacing()).getLocation().subtract(facingLoc).toVector();
 					Vector velocity = projectile.getVelocity();
 					double speed = velocity.length();
-					projectile.setVelocity(velocity.getMidpoint(validVec).normalize().multiply(speed * 1.3));
+					projectile.setVelocity(velocity.getMidpoint(validVec).normalize().multiply(speed * 1.4));
 					Collection<Entity> entities = projectile.getNearbyEntities(50, 10, 50);
 					for (Entity entity : entities) {
 						if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Umpire.Umpire_Name"))){
@@ -194,6 +195,7 @@ public class SnowballGameListener implements Listener {
 	            return;
 	        }
 		 if((projectile.hasMetadata("ballType"))){
+			 projectile.remove();
 			 ItemStack ball = Util.getBall(projectile.getMetadata("ballType").get(0).asString());
 			 String moving = "";
 			 if(projectile.hasMetadata("moving")){
@@ -280,22 +282,22 @@ public class SnowballGameListener implements Listener {
 			msg = Util.addColors(msg);
 			Util.broadcastRange(plugin, player, msg, range);
 		}
+		String bowName = "";
+		if(event.getBow().hasItemMeta() && event.getBow().getItemMeta().hasDisplayName()){
+			bowName = event.getBow().getItemMeta().getDisplayName();
+		}
+		int rolld = 1;
+		if(Util.isBat(player.getInventory().getItemInMainHand())){
+			if(player.getMainHand() == MainHand.LEFT){
+				rolld = -1;
+			}
+		}else if(Util.isBat(player.getInventory().getItemInOffHand()) && !Util.isBat(player.getInventory().getItemInMainHand())){
+			if(player.getMainHand() == MainHand.RIGHT){
+				rolld = -1;
+			}
+		}
 		for (Entity entity : nearByEntities) {
 			if(entity.getType() == EntityType.SNOWBALL && entity.hasMetadata("ballType")){
-				String bowName = "";
-				if(event.getBow().hasItemMeta() && event.getBow().getItemMeta().hasDisplayName()){
-					bowName = event.getBow().getItemMeta().getDisplayName();
-				}
-				int rolld = 1;
-				if(Util.isBat(player.getInventory().getItemInMainHand())){
-					if(player.getMainHand() == MainHand.LEFT){
-						rolld = -1;
-					}
-				}else if(Util.isBat(player.getInventory().getItemInOffHand()) && !Util.isBat(player.getInventory().getItemInMainHand())){
-					if(player.getMainHand() == MainHand.RIGHT){
-						rolld = -1;
-					}
-				}
 				new BallProcess(plugin).hit((Projectile)entity,player.getEyeLocation(), impactLoc , force, rolld, bowName);
 				if(plugin.getConfig().getBoolean("Broadcast.Hit.Enabled")){
 					msg = plugin.getConfig().getString("Broadcast.Hit.Message");
@@ -317,19 +319,28 @@ public class SnowballGameListener implements Listener {
 			if(plugin.getConfig().getBoolean("Particle.Swing_Bat.Enabled") && Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Swing_Bat")) != null){
 				player.getWorld().spawnParticle(Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Swing_Bat")), playerLoc, 1);
 			}
-		}
-		if(plugin.getConfig().getBoolean("Parrticle.Swing_Bat_Sequent")){
-
+			if(plugin.getConfig().getBoolean("Particle.Swing_Bat_Sequent.Enabled") && Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Swing_Bat_Sequent")) != null){
+				Location eye = player.getEyeLocation();
+				for(double i=0; Math.abs(i)<Math.PI; i=i-0.15708*rolld){
+					Vector swing = Util.getBatmove(eye, i, rolld, bowName);
+					if(swing.length() != 0){
+						swing.multiply(0.8);
+					}
+					swing.setY(swing.getY() + eye.getDirection().getY() + 1);
+					player.getWorld().spawnParticle(Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Swing_Bat_Sequent")), eye.clone().add(swing), 1);
+				}
+			}
 		}
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void onTeeInteracted(PlayerInteractEvent event){
+		Player player = event.getPlayer();
 		if(event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType() == Material.BREWING_STAND){
 			ItemStack hand;
-			if(Util.isBall(event.getPlayer().getInventory().getItemInMainHand())){
-				hand = event.getPlayer().getInventory().getItemInMainHand();
-			}else if(Util.isBall(event.getPlayer().getInventory().getItemInOffHand())){
-				hand = event.getPlayer().getInventory().getItemInOffHand();
+			if(Util.isBall(player.getInventory().getItemInMainHand())){
+				hand = player.getInventory().getItemInMainHand();
+			}else if(Util.isBall(player.getInventory().getItemInOffHand())){
+				hand = player.getInventory().getItemInOffHand();
 			}else{
 				return;
 			}
@@ -347,15 +358,46 @@ public class SnowballGameListener implements Listener {
 			}
 			Projectile placedBall = (Projectile)tee.getWorld().spawnEntity(ballLoc, EntityType.SNOWBALL);
 			placedBall.setMetadata("ballType", new FixedMetadataValue(plugin, Util.getBallType(hand.getItemMeta().getLore())));
-			placedBall.setShooter(event.getPlayer());
+			placedBall.setShooter(player);
 			placedBall.setGravity(false);
 			placedBall.setGlowing(true);
-			if(event.getPlayer().getGameMode() == GameMode.CREATIVE){
+			if(player.getGameMode() == GameMode.CREATIVE){
 				return;
 			}
 			hand.setAmount(hand.getAmount() - 1);
 		}else if(event.hasItem() && Util.isCoach(event.getItem())){
-			event.getPlayer().setMetadata("coachsetter", new FixedMetadataValue(plugin, true));
+			player.setMetadata("coachsetter", new FixedMetadataValue(plugin, true));
+		}else if(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK){
+			if(!(plugin.getConfig().getBoolean("Glove.Enabled_Glove") && Util.isGlove(player.getInventory().getItemInOffHand()) && player.getInventory().getItemInMainHand().getType() == Material.AIR)){
+				return;
+			}
+			if(player.hasMetadata("catchTried")){
+				return;
+			}
+			Collection <Entity> nearByEntities = player.getWorld().getNearbyEntities(player.getEyeLocation(), 3, 4, 3);
+			for(Entity ball : nearByEntities){
+				if(ball.getType() == EntityType.SNOWBALL && ball.hasMetadata("ballType")){
+					event.setCancelled(true);
+					if(Math.random() * 8 > player.getEyeLocation().distance(ball.getLocation())){
+						ball.remove();
+						player.sendMessage("Catched!");
+						Bukkit.getServer().getPluginManager().callEvent(new ProjectileHitEvent((Projectile)ball,player));
+					}else{
+						player.sendMessage("Missed!");
+						ball.setVelocity(ball.getVelocity().multiply(Math.random()).add(Vector.getRandom().multiply(0.3)));
+					}
+					break;
+				}
+			}
+			player.setMetadata("catchTried", new FixedMetadataValue(plugin,true));
+			plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable()
+		      {
+		        @Override
+		        public void run()
+		        {
+		        	player.removeMetadata("catchTried", plugin);
+		        }
+		      }, (2L));
 		}
 	}
 	@EventHandler(priority = EventPriority.LOW)

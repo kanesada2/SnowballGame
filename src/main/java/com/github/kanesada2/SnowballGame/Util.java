@@ -277,10 +277,21 @@ public final class Util {
 		 }
 		 return particle;
 	 }
-	 public static Vector getBatmove(Location eye, double roll, int rolld, double upper){
+	 public static Vector getBatmove(Location eye, double roll, int rolld, String batType){
 		 Location pushD = eye.clone();
 		 pushD.setYaw(pushD.getYaw() + (float)(90 * rolld));
 		 Vector direction = pushD.getDirection().setY(0).normalize();
+		 SnowballGame plugin = SnowballGame.getPlugin(SnowballGame.class);
+		 double upper = 0;
+			if(plugin.getConfig().getStringList("Bat.Swing.Type").contains(batType)){
+				upper = plugin.getConfig().getDouble("Bat.Swing." + batType + ".Fly", 0);
+				if(Math.abs(upper) > 1){
+					upper = 1 * Math.signum(upper);
+				}
+				if(upper > 0){
+					upper = upper * 0.5;
+				}
+			}
 		 double theta = Math.abs(roll * 2) + Math.PI * upper;
 		 double x = Math.cos(roll) * direction.normalize().getX() * (theta - Math.sin(theta)) - Math.sin(roll) * direction.normalize().getZ() * (theta - Math.sin(theta));
 		 double y = -(1 - Math.cos(theta));
