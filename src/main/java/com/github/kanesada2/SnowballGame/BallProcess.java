@@ -26,7 +26,7 @@ public class BallProcess {
 		Vector velocity = ball.getVelocity();
 		Location hitLoc = ball.getLocation();
 		Projectile bounced;
-		Vector spinFromBounce = new Vector(0,0,0);
+		Vector ballSpin = new Vector(0,0,0);
 		int samePlace = 0;
 		if(ball.hasMetadata("bouncedLoc") && hitLoc.distance((Location)ball.getMetadata("bouncedLoc").get(0).value()) == 0){
 			if(ball.hasMetadata("samePlace")){
@@ -65,52 +65,40 @@ public class BallProcess {
 				}
 			}
 		}else{
-			Vector vecToCompare;
-			Vector ballSpin = new Vector(0,0,0);
 			Vector linear = new Vector(0,0,0);
-			if(ball.hasMetadata("moveFromSpin")){
-				ballSpin = (Vector)ball.getMetadata("moveFromSpin").get(0).value();
+			Vector moveFromSpin = new Vector(0,0,0);
+			if(ball.hasMetadata("spin")){
+				ballSpin = (Vector)ball.getMetadata("spin").get(0).value();
+			}
+			if(ballSpin.length() != 0){
+				moveFromSpin = velocity.clone().multiply(-1).getCrossProduct(ballSpin).normalize().multiply(ballSpin.length() * 9);
 			}
 			if(hitFace == BlockFace.SOUTH || hitFace == BlockFace.NORTH){
 				z = -z;
-				vecToCompare = velocity.clone().setZ(0);
-				if(vecToCompare.length() > 0){
-					linear = vecToCompare.clone().normalize().multiply(-ballSpin.getZ());
-				}
-				ballSpin.setZ(0);
+				linear = velocity.clone().setZ(0);
 			}else if(hitFace == BlockFace.EAST || hitFace == BlockFace.WEST){
 				x = -x;
-				vecToCompare = velocity.clone().setX(0);
-				if(vecToCompare.length() > 0){
-					linear = vecToCompare.clone().normalize().multiply(-ballSpin.getX());
-				}
-				ballSpin.setX(0);
+				linear = velocity.clone().setX(0);
 			}else{
 				y = -y;
-				vecToCompare = velocity.clone().setY(0);
-				if(vecToCompare.length() > 0){
-					linear = vecToCompare.clone().normalize().multiply(-ballSpin.getY());
-				}
-				ballSpin.setY(0);
+				linear = velocity.clone().setY(0);
 			}
-			spinFromBounce = vecToCompare.clone().multiply(0.05);
-			if(spinFromBounce.length() * 10 > ballSpin.length()){
-				ballSpin.multiply(-1);
-			}
-			spinFromBounce.add(linear).add(ballSpin);
-			double angle = velocity.angle(vecToCompare) / Math.toRadians(90);
+			Vector normal = linear.clone().subtract(velocity).normalize();
+			moveFromSpin.setY(moveFromSpin.getY() * 0.64);
+			double angle = velocity.angle(linear) / Math.toRadians(90);
 			velocity.setX(x * Math.pow(0.85, angle));
 			velocity.setY(y * Math.pow(0.55, angle));
 			velocity.setZ(z * Math.pow(0.85, angle));
 			velocity.multiply(Math.pow(1.3, -(velocity.length())));
-			velocity.add(spinFromBounce);
+			velocity.add(moveFromSpin);
+			ballSpin.multiply(0.01).add(linear.getCrossProduct(normal).multiply(0.003));
 		}
 		bounced = (Projectile)hitLoc.getWorld().spawnEntity(hitLoc, EntityType.SNOWBALL);
 		bounced.setVelocity(velocity);
 		bounced.setGlowing(true);
 		bounced.setShooter(ball.getShooter());
 		bounced.setMetadata("ballType", new FixedMetadataValue(plugin, ball.getMetadata("ballType").get(0).asString()));
-		bounced.setMetadata("moveFromSpin", new FixedMetadataValue(plugin, spinFromBounce.multiply(0.1)));
+		bounced.setMetadata("spin", new FixedMetadataValue(plugin, ballSpin));
 		bounced.setMetadata("bouncedLoc", new FixedMetadataValue(plugin, hitLoc));
 		bounced.setMetadata("samePlace", new FixedMetadataValue(plugin, samePlace));
 	}
@@ -147,14 +135,11 @@ public class BallProcess {
 		hitball.setVelocity(velocity);
 		hitball.setMetadata("ballType", new FixedMetadataValue(plugin, ball.getMetadata("ballType").get(0).asString()));
 		impactLoc.getWorld().playSound(impactLoc, Sound.ENTITY_ENDERDRAGON_FIREBALL_EXPLODE , force, 1);
+		Vector spinVector = fromCenter.getCrossProduct(velocity).normalize().multiply(fromCenter.length());
 		if(plugin.getConfig().getBoolean("Particle.BattedBall_InFlight.Enabled")){
-			new BallMovingTask(hitball, fromCenter.clone().normalize().multiply(0.007 * force), Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_InFlight")), 0).runTaskTimer(plugin, 0, 1);
+			new BallMovingTask(hitball, spinVector.multiply(0.008 * force), 0, Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_InFlight")), 0).runTaskTimer(plugin, 0, 1);
 		}else{
-			new BallMovingTask(hitball, fromCenter.clone().normalize().multiply(0.007 * force), 0).runTaskTimer(plugin, 0, 1);
-		}
-		double angle = hitball.getVelocity().angle(hitball.getVelocity().clone().setY(0)) * 57.2958;
-		if(hitball.getVelocity().getY() < 0){
-			angle = -1 * angle;
+			new BallMovingTask(hitball, spinVector.multiply(0.008 * force), 0, 0).runTaskTimer(plugin, 0, 1);
 		}
 	}
 	public void knock(Player player, ArmorStand knocker){
@@ -170,9 +155,9 @@ public class BallProcess {
 		knockedVec.multiply(distance / 25);
 		Projectile batted = ((ProjectileSource)knocker).launchProjectile(Snowball.class, knockedVec);
 		if(plugin.getConfig().getBoolean("Particle.BattedBall_InFlight.Enabled")){
-			new BallMovingTask(batted, Vector.getRandom().normalize().multiply(0.0015 * knockedVec.length()), Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_InFlight")), 0).runTaskTimer(plugin, 0, 1);
+			new BallMovingTask(batted, Vector.getRandom().normalize().multiply(0.0015 * knockedVec.length()), 0, Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_InFlight")), 0).runTaskTimer(plugin, 0, 1);
 		}else{
-			new BallMovingTask(batted, Vector.getRandom().normalize().multiply(0.0015 * knockedVec.length()), 0).runTaskTimer(plugin, 0, 1);
+			new BallMovingTask(batted, Vector.getRandom().normalize().multiply(0.0015 * knockedVec.length()), 0, 0).runTaskTimer(plugin, 0, 1);
 		}
 		player.sendMessage("Catch the ball!!!");
 
@@ -195,21 +180,24 @@ public class BallProcess {
 			if(config.getDouble(section + ".Random") != 0){
 				random = config.getDouble(section + ".Random");
 			}
-			Vector acceleration = directionLoc.getDirection().normalize().multiply(config.getDouble(section + ".Acceleration", 0));
+			double acceleration = config.getDouble(section + ".Acceleration", 0);
 			Vector linear = directionLoc.getDirection().setY(0).normalize();
 			double angle = directionLoc.getDirection().angle(linear) * Math.signum(directionLoc.getDirection().getY());
 			Vector vertical = new Vector(linear.getX() * -Math.sin(angle), Math.cos(angle), linear.getZ() * -Math.sin(angle)).normalize().multiply(config.getDouble(section + ".Vertical",0));
 			Vector horizontal = linear.getCrossProduct(new Vector(0,1,0)).normalize().multiply(moved * config.getDouble(section + ".Horizontal",0));
-			moveVector = acceleration.add(vertical).add(horizontal);
+			moveVector = vertical.clone().add(horizontal);
+			Vector spinVector = moveVector.getCrossProduct(velocity);
+			if(spinVector.length() != 0){
+				spinVector.normalize().multiply(moveVector.length());
+			}
 			if(ball.getShooter() instanceof BlockProjectileSource){
-				velocity.add(vertical.clone().add(horizontal.multiply(0.65)).multiply(-(15 / velocity.length())));
+				velocity.add(vertical.clone().add(horizontal.clone().multiply(0.65)).multiply(-(15 / velocity.length())));
 			}
 			ball.setVelocity(velocity);
-			ball.setMetadata("isPitched", new FixedMetadataValue(plugin,true));
 			if(plugin.getConfig().getBoolean("Particle.MovingBall.Enabled") && Util.getParticle(plugin.getConfig().getConfigurationSection(section)) != null){
-				new BallMovingTask(ball, moveVector, Util.getParticle(plugin.getConfig().getConfigurationSection(section)), random).runTaskTimer(plugin, 0, 1);
+				new BallMovingTask(ball, spinVector, acceleration , Util.getParticle(plugin.getConfig().getConfigurationSection(section)), random).runTaskTimer(plugin, 0, 1);
 			}else{
-				new BallMovingTask(ball, moveVector, random).runTaskTimer(plugin, 0, 1);
+				new BallMovingTask(ball, spinVector, acceleration, random).runTaskTimer(plugin, 0, 1);
 			}
 
 		}

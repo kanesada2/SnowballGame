@@ -7,16 +7,19 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.Vector;
 
 public class BallMovingTask extends BukkitRunnable {
-    private Vector moveVector,spinVector,actualMove;
+    private Vector actualMove;
+    private Vector spinVector = new Vector(0,0,0);
     private Projectile ball;
     private Particle particle = null;
     private double random = 0;
-    private double x,y,z,angle;
-	public BallMovingTask(Projectile ball, Vector moveVector, Particle particle, double random) {
+    private double acceleration = 0;
+    private double x,y,z;
+	public BallMovingTask(Projectile ball, Vector spinVector, double acceleration, Particle particle, double random) {
         this.ball = ball;
-        this.spinVector = ball.getVelocity().getCrossProduct(moveVector).normalize();
-        this.moveVector = moveVector;
-        this.angle = moveVector.angle(ball.getVelocity());
+        this.spinVector = spinVector;
+        if(acceleration != 0){
+        	this.acceleration = acceleration;
+        }
         this.particle = particle;
         this.random = random;
         if(random != 0){
@@ -24,22 +27,21 @@ public class BallMovingTask extends BukkitRunnable {
         	this.y = Math.random() * 2 * Math.PI;
         	this.z = Math.random() * 2 * Math.PI;
         }
-        this.moveVector = moveVector;
-        ball.setMetadata("moveFromSpin", new FixedMetadataValue(SnowballGame.getPlugin(SnowballGame.class), moveVector.clone().multiply(10)));
+        ball.setMetadata("spin", new FixedMetadataValue(SnowballGame.getPlugin(SnowballGame.class), spinVector));
     }
-	public BallMovingTask(Projectile ball, Vector moveVector, double random) {
+	public BallMovingTask(Projectile ball, Vector spinVector, double acceleration, double random) {
         this.ball = ball;
-        this.spinVector = ball.getVelocity().getCrossProduct(moveVector).normalize();
-        this.moveVector = moveVector;
-        this.angle = moveVector.angle(ball.getVelocity());
+        this.spinVector = spinVector;
+        if(acceleration != 0){
+        	this.acceleration = acceleration;
+        }
         this.random = random;
         if(random != 0){
         	this.x = Math.random() * 2 * Math.PI;
         	this.y = Math.random() * 2 * Math.PI;
         	this.z = Math.random() * 2 * Math.PI;
         }
-        this.moveVector = moveVector;
-        ball.setMetadata("moveFromSpin", new FixedMetadataValue(SnowballGame.getPlugin(SnowballGame.class), moveVector.clone().multiply(10)));
+        ball.setMetadata("spin", new FixedMetadataValue(SnowballGame.getPlugin(SnowballGame.class), spinVector));
 	}
     @Override
     public void run() {
@@ -47,12 +49,12 @@ public class BallMovingTask extends BukkitRunnable {
     		this.cancel();
     	}
     	Vector velocity = ball.getVelocity();
-    	if(moveVector.length() > 0){
-	    	actualMove = spinVector.getCrossProduct(velocity);
-	    	if(ball.hasMetadata("isPitched")){
-	    		actualMove.add(velocity.clone().normalize().multiply(Math.cos(angle)));
+    	if(spinVector.length() != 0 || acceleration != 0){
+	    	actualMove = velocity.getCrossProduct(spinVector);
+	    	if(actualMove.length() != 0){
+	    		actualMove.normalize().multiply(spinVector.length());
 	    	}
-	    	actualMove.normalize().multiply(moveVector.length());
+	    	actualMove.add(velocity.clone().normalize().multiply(acceleration));
 	    	velocity.add(actualMove);
     	}
     	if(random != 0){
