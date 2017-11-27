@@ -84,7 +84,7 @@ public class BallProcess {
 				linear = velocity.clone().setY(0);
 			}
 			Vector normal = linear.clone().subtract(velocity).normalize();
-			moveFromSpin.setY(moveFromSpin.getY() * 0.64);
+			moveFromSpin.setY(moveFromSpin.getY() * 0.5);
 			double angle = velocity.angle(linear) / Math.toRadians(90);
 			velocity.setX(x * Math.pow(0.85, angle));
 			velocity.setY(y * Math.pow(0.55, angle));

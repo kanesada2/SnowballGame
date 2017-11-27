@@ -166,7 +166,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 						}
 						for(Entity entity : entities){
 							if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Coach.Coach_Name"))){
-								new BallProcess(plugin).knock(player, (ArmorStand)entity);
+								SnowballGameAPI.playWithCoach(player, (ArmorStand)entity, "normal");
 								break;
 							}
 						}

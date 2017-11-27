@@ -272,7 +272,7 @@ public final class Util {
 			 try{
 				 particle =  Particle.valueOf(config.getString("Particle"));
 			 }catch(IllegalArgumentException e){
-				 Bukkit.broadcastMessage("The value of " + config.getCurrentPath() +".Particle:"+ config.getString("Particle") + " is invalid!!");
+				 Bukkit.broadcastMessage("The value of " + config.getCurrentPath() +".Particle : "+ config.getString("Particle") + " is invalid!!");
 			 }
 		 }
 		 return particle;
