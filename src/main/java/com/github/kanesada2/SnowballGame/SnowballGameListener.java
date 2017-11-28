@@ -85,11 +85,6 @@ public class SnowballGameListener implements Listener {
 				}
 			}
 			if(Util.isBall(hand)){
-				event.setCancelled(true);
-				if(player.hasMetadata("onMotion") || player.hasMetadata("onSlide")){
-					player.sendMessage("You can't throw the ball so quickly.");
-					return;
-				}
 				int moved;
 				if(isR){
 					moved = 1;
@@ -131,7 +126,14 @@ public class SnowballGameListener implements Listener {
 					random = (double)values.get("random");
 					tracker = (Particle)values.get("tracker");
 				}
-				Projectile ball = SnowballGameAPI.launch(player, hand, true, Util.getBallType(hand.getItemMeta().getLore()), ballName, old.getVelocity(), spinVector, acceleration, random, tracker, location, vModifier);
+				Projectile ball = SnowballGameAPI.launch(player, true, Util.getBallType(hand.getItemMeta().getLore()), ballName, old.getVelocity(), spinVector, acceleration, random, tracker, location, vModifier);
+				PlayerThrowBallEvent throwEvent = new PlayerThrowBallEvent(player, ball);
+				Bukkit.getPluginManager().callEvent(throwEvent);
+				if(throwEvent.isCancelled()){
+					ball.remove();
+					event.setCancelled(true);
+					return;
+				}
 				ball.setVelocity(ball.getVelocity().add(vlModifier).add(player.getVelocity()));
 				/*projectile = (Projectile)player.getWorld().spawnEntity(location, EntityType.SNOWBALL);
 				projectile.setVelocity(old.getVelocity().add(vlModifier));
@@ -201,13 +203,9 @@ public class SnowballGameListener implements Listener {
 					from.removeMetadata("moving", plugin);
 				}
 				projectile.remove();
-				SnowballGameAPI.launch(source, null, true, from.getMetadata("ballType").get(0).asString(), ballName, velocity, spinVector, acceleration, random, tracker, projectile.getLocation(), vModifier);
+				SnowballGameAPI.launch(source, true, from.getMetadata("ballType").get(0).asString(), ballName, velocity, spinVector, acceleration, random, tracker, projectile.getLocation(), vModifier);
 				from.removeMetadata("ballType", plugin);
 			}
-		}else if(projectile.getShooter() instanceof ArmorStand){
-			projectile.setMetadata("moving",new FixedMetadataValue(plugin, "batted"));
-			projectile.setGlowing(true);
-			projectile.setMetadata("ballType", new FixedMetadataValue(plugin, "normal"));
 		}
 	}
 	@EventHandler(priority = EventPriority.LOW)
@@ -219,25 +217,21 @@ public class SnowballGameListener implements Listener {
 		 if((projectile.hasMetadata("ballType"))){
 			 projectile.remove();
 			 ItemStack ball = Util.getBall(projectile.getMetadata("ballType").get(0).asString());
-			 String moving = "";
-			 if(projectile.hasMetadata("moving")){
-				 moving = projectile.getMetadata("moving").get(0).asString();
-				 projectile.removeMetadata("moving", plugin);
+			 boolean isDirect = false;
+			 if(projectile.hasMetadata("moving") && projectile.getMetadata("moving").get(0).asString().equalsIgnoreCase("batted")){
+				 isDirect = true;
 			 }
 			 if(event.getHitEntity() instanceof Player){
 				Player player = (Player)event.getHitEntity();
 				PlayerInventory inventory = player.getInventory();
 				ItemStack offHand = inventory.getItemInOffHand();
 				if(plugin.getConfig().getBoolean("Glove.Enabled_Glove") && Util.isGlove(offHand)){
-					if(plugin.getConfig().getBoolean("Broadcast.Catch.Enabled") && moving.equalsIgnoreCase("batted")){
-						Util.broadcastRange(plugin, player, Util.addColors(plugin.getConfig().getString("Broadcast.Catch.Message").replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString())), plugin.getConfig().getInt("Broadcast.Catch.Range"));
-					}
-					if(plugin.getConfig().getBoolean("Particle.Catch_Ball.Enabled") && Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Catch_Ball")) != null){
-						player.getWorld().spawnParticle(Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Catch_Ball")), player.getLocation(), 5, 0.5, 0.5, 0.5);
-					}
 					if(inventory.containsAtLeast(ball,1) || inventory.firstEmpty() != -1){
-						inventory.addItem(ball);
-						return;
+						PlayerCatchBallEvent catchEvent = new PlayerCatchBallEvent(player, projectile, ball, isDirect);
+						Bukkit.getPluginManager().callEvent(catchEvent);
+						if(!catchEvent.isCancelled()){
+							return;
+						}
 					}
 				} else {
 					if(plugin.getConfig().getBoolean("Knockback_For_Players") && player.getGameMode() != GameMode.CREATIVE){
@@ -255,7 +249,7 @@ public class SnowballGameListener implements Listener {
 					}
 				//new BallProcess(plugin).bounce(projectile, event.getHitBlock());
 				SnowballGameAPI.bounce(projectile, event.getHitBlock(), new Vector(0.85, 0.5, 0.85), spinVector);
-				if(plugin.getConfig().getBoolean("Particle.BattedBall_Ground.Enabled") && Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_Ground")) != null && moving.equalsIgnoreCase("batted")){
+				if(plugin.getConfig().getBoolean("Particle.BattedBall_Ground.Enabled") && Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_Ground")) != null && isDirect){
 					AreaEffectCloud cloud = (AreaEffectCloud)projectile.getWorld().spawnEntity(projectile.getLocation(), EntityType.AREA_EFFECT_CLOUD);
 					cloud.setParticle(Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_Ground")));
 					cloud.setDuration(plugin.getConfig().getInt("Particle.BattedBall_Ground.Time",200));
@@ -284,8 +278,8 @@ public class SnowballGameListener implements Listener {
 		if(!(plugin.getConfig().getBoolean("Bat.Enabled_Bat") && event.getEntity() instanceof Player && Util.isBat(event.getBow()))){
 			return;
 		}
+		event.setCancelled(true);
 		Entity batArrow = event.getProjectile();
-		batArrow.remove();
 		float force = event.getForce();
 		double size = 2.2 - force;
 		Location impactLoc = batArrow.getLocation().add(batArrow.getVelocity().multiply(1/force));
@@ -510,6 +504,36 @@ public class SnowballGameListener implements Listener {
 				player.sendMessage(Util.addColors("[[DARK_AQUA]][[BOLD]]*** YOU ARE TRYING TO DIVE! ***"));
 				player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 10, 128));
 		}
+	}
+	@EventHandler(priority = EventPriority.LOW)
+	public void onThrow(PlayerThrowBallEvent event){
+		Player player = event.getPlayer();
+		if(player.hasMetadata("onMotion") || player.hasMetadata("onSlide")){
+			player.sendMessage("You can't throw the ball so quickly.");
+			event.setCancelled(true);
+			return;
+		}
+		player.setMetadata("onMotion", new FixedMetadataValue(plugin, true));
+		new PlayerCoolDownTask(plugin, player).runTaskLater(plugin, plugin.getConfig().getInt("Ball.Cool_Time", 30));
+	}
+	@EventHandler(priority = EventPriority.LOW)
+	public void onHit(PlayerHitBallEvent event){
+
+	}
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void onCatch(PlayerCatchBallEvent event){
+		if(event.isCancelled()){
+			return;
+		}
+		Player player = event.getPlayer();
+		if(plugin.getConfig().getBoolean("Broadcast.Catch.Enabled") && event.isDirect()){
+			Util.broadcastRange(plugin, player, Util.addColors(plugin.getConfig().getString("Broadcast.Catch.Message").replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString())), plugin.getConfig().getInt("Broadcast.Catch.Range"));
+		}
+		if(plugin.getConfig().getBoolean("Particle.Catch_Ball.Enabled") && Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Catch_Ball")) != null){
+			player.getWorld().spawnParticle(Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Catch_Ball")), player.getLocation(), 5, 0.5, 0.5, 0.5);
+		}
+		player.getInventory().addItem(event.getItemBall());
+
 	}
 }
 

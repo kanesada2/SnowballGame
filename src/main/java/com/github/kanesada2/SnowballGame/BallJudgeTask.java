@@ -22,7 +22,7 @@ public class BallJudgeTask extends BukkitRunnable {
     @Override
     public void run() {
     	count++;
-    	if(!ball.hasMetadata("moving")){
+    	if(ball.isDead() || !ball.hasMetadata("moving")){
     		this.cancel();
     	}
     	if(count > 100){

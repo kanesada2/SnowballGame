@@ -45,7 +45,7 @@ public class BallMovingTask extends BukkitRunnable {
 	}
     @Override
     public void run() {
-    	if(!ball.hasMetadata("moving")){
+    	if(ball.isDead() || !ball.hasMetadata("moving")){
     		this.cancel();
     	}
     	Vector velocity = ball.getVelocity();

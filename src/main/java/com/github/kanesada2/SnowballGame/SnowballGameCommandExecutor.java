@@ -174,10 +174,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 						new PlayerCoolDownTask(plugin, player).runTaskLater(plugin, plugin.getConfig().getInt("Ball.Cool_Time", 30));
 						return true;
 					}
-				}else{
-					sender.sendMessage("Unknown command. Please check /sbg");
-					return false;
-				}
+			}
 			case 2:
 				if(!(sender instanceof Player)){
 					sender.sendMessage("Please send this command in game.");
