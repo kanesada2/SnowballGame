@@ -1,19 +1,20 @@
-package com.github.kanesada2.SnowballGame;
+package com.github.kanesada2.SnowballGame.api;
 
-import org.bukkit.entity.Player;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.player.PlayerEvent;
+import org.bukkit.event.entity.EntityEvent;
 
-public class PlayerThrowBallEvent extends PlayerEvent implements Cancellable {
-
+public class UmpireCallEvent extends EntityEvent implements Cancellable {
 	private static final HandlerList handlers = new HandlerList();
 	private boolean cancelled = false;
 	private Projectile ball;
-	public PlayerThrowBallEvent(Player who, Projectile ball) {
+	private String msg;
+	public UmpireCallEvent(ArmorStand who, Projectile ball, String msg){
 		super(who);
 		this.ball = ball;
+		this.msg = msg;
 	}
 
 	public Projectile getBall(){
@@ -22,6 +23,14 @@ public class PlayerThrowBallEvent extends PlayerEvent implements Cancellable {
 
 	public void setBall(Projectile ball){
 		this.ball = ball;
+	}
+
+	public String getMsg(){
+		return msg;
+	}
+
+	public void setMsg(String msg){
+		this.msg = msg;
 	}
 
 	@Override
@@ -42,5 +51,6 @@ public class PlayerThrowBallEvent extends PlayerEvent implements Cancellable {
 	public static HandlerList getHandlerList() {
 		return handlers;
 	}
+
 
 }

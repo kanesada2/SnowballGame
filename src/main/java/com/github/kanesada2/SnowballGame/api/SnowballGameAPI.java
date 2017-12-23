@@ -1,9 +1,10 @@
-package com.github.kanesada2.SnowballGame;
+package com.github.kanesada2.SnowballGame.api;
 
 import java.util.Collection;
 import java.util.HashMap;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -16,15 +17,22 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.projectiles.ProjectileSource;
 import org.bukkit.util.BlockIterator;
 import org.bukkit.util.Vector;
 
+import com.github.kanesada2.SnowballGame.BallJudgeTask;
+import com.github.kanesada2.SnowballGame.BallMovingTask;
+import com.github.kanesada2.SnowballGame.SnowballGame;
+import com.github.kanesada2.SnowballGame.Util;
+
 public class SnowballGameAPI {
 	private static SnowballGame plugin = SnowballGame.getPlugin(SnowballGame.class);
 
-	public static Projectile launch(ProjectileSource shooter, boolean isPitching, String ballType, String ballName, Vector velocity, Vector spinVector, double acceleration, double random, Particle tracker, Location rPoint,Vector vModifier){
+	public static Projectile launch(ProjectileSource shooter, ItemStack hand,  boolean isPitching, String ballType, String ballName, Vector velocity, Vector spinVector, double acceleration, double random, Particle tracker, Location rPoint,Vector vModifier){
 		Projectile launched = (Projectile)rPoint.getWorld().spawnEntity(rPoint, EntityType.SNOWBALL);
 		launched.setGravity(true);
 		launched.setGlowing(true);
@@ -34,13 +42,22 @@ public class SnowballGameAPI {
 		if(ballName != null){
 			launched.setMetadata("moving", new FixedMetadataValue(plugin, ballName));
 		}
+		if(shooter instanceof Player){
+			if(((Player)shooter).getGameMode() == GameMode.CREATIVE){
+				hand = null;
+			}
+		}
+		if(hand != null){
+			hand.setAmount(hand.getAmount() - 1);
+		}
 		if(isPitching){
+			Bukkit.getPluginManager().callEvent(new BallThrownEvent(launched));
 			Collection<Entity> entities = launched.getNearbyEntities(50, 10, 50);
 			for (Entity entity : entities) {
 				if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Umpire.Umpire_Name"))){
 					Location inBottom = entity.getLocation().add(new Vector(-0.5, plugin.getConfig().getDouble("Umpire.Bottom"), -0.5));
 					Location outTop = entity.getLocation().add(new Vector(0.5, plugin.getConfig().getDouble("Umpire.Top") , 0.5));
-					new BallJudgeTask(launched, inBottom, outTop, plugin).runTaskTimer(plugin, 0, 1);
+					new BallJudgeTask(launched, (ArmorStand)entity, inBottom, outTop, plugin).runTaskTimer(plugin, 0, 1);
 				}
 			}
 		}
@@ -53,11 +70,11 @@ public class SnowballGameAPI {
 		}
 		return launched;
 	}
-	public static Projectile tryHit(Player player, Location center, Vector range, float force, double rate, Vector batMove, double coefficient){
+	public static Projectile tryHit(Player player, Location center, Vector hitRange, float force, double rate, Vector batMove, double coefficient){
 		Entity meetCursor = center.getWorld().spawnEntity(center, EntityType.SNOWBALL);
 		meetCursor.setGravity(false);
 		meetCursor.remove();
-		Collection <Entity> nearByEntities = center.getWorld().getNearbyEntities(center, range.getX(), range.getY(), range.getZ());
+		Collection <Entity> nearByEntities = center.getWorld().getNearbyEntities(center, hitRange.getX(), hitRange.getY(), hitRange.getZ());
 		String msg;
 		int brRange;
 		if(force < 0.4 && plugin.getConfig().getBoolean("Broadcast.Bunt.Enabled")){
@@ -111,13 +128,51 @@ public class SnowballGameAPI {
 				if(plugin.getConfig().getBoolean("Particle.BattedBall_InFlight.Enabled")){
 					tracker = Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_InFlight"));
 				}
-				Projectile hitball = SnowballGameAPI.launch(player, false, entity.getMetadata("ballType").get(0).asString(), "batted", velocity, spinVector.clone().multiply(0.008 * force), 0, 0, tracker, entity.getLocation(), new Vector(0,0,0));
-				PlayerHitBallEvent HitEvent = new PlayerHitBallEvent(player, hitball, spinVector.clone().multiply(0.008 * force));
+				Projectile hitball = SnowballGameAPI.launch(player, null, false, entity.getMetadata("ballType").get(0).asString(), "batted", velocity, spinVector.clone().multiply(0.008 * force), 0, 0, tracker, entity.getLocation(), new Vector(0,0,0));
+				PlayerHitBallEvent HitEvent = new PlayerHitBallEvent(player, hitball, (Projectile)entity, spinVector.clone().multiply(0.008 * force));
 				Bukkit.getPluginManager().callEvent(HitEvent);
 				return hitball;
 			}
 		}
 		return null;
+	}
+	public static boolean tryCatch(Player player, Location from, Vector range, double rate){
+		Collection <Entity> nearByEntities = player.getWorld().getNearbyEntities(from, range.getX(), range.getY(), range.getZ());
+		Inventory inventory = player.getInventory();
+		for(Entity ball : nearByEntities){
+			if(ball.getType() == EntityType.SNOWBALL && ball.hasMetadata("ballType")){
+				if(Math.random() * rate > from.distance(ball.getLocation())){
+					ball.remove();
+					ItemStack itemBall = Util.getBall(ball.getMetadata("ballType").get(0).asString());
+					if(inventory.containsAtLeast(itemBall,1) || inventory.firstEmpty() != -1){
+						PlayerCatchBallEvent catchEvent = new PlayerCatchBallEvent(player, (Projectile)ball, itemBall, ball.hasMetadata("moving") && ball.getMetadata("moving").get(0).asString().equalsIgnoreCase("batted"));
+						Bukkit.getPluginManager().callEvent(catchEvent);
+						if(!catchEvent.isCancelled()){
+							if(from.distance(ball.getLocation()) > 0){
+								player.sendMessage("Catched!");
+							}
+							if(plugin.getConfig().getBoolean("Broadcast.Catch.Enabled") && catchEvent.isDirect()){
+								Util.broadcastRange(plugin, player, Util.addColors(plugin.getConfig().getString("Broadcast.Catch.Message").replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString())), plugin.getConfig().getInt("Broadcast.Catch.Range"));
+							}
+							if(plugin.getConfig().getBoolean("Particle.Catch_Ball.Enabled") && Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Catch_Ball")) != null){
+								player.getWorld().spawnParticle(Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Catch_Ball")), player.getLocation(), 5, 0.5, 0.5, 0.5);
+							}
+							player.getInventory().addItem(catchEvent.getItemBall());
+						}
+					}else{
+						ball.getWorld().dropItem(ball.getLocation(), itemBall);
+					}
+				}else{
+					if(from.distance(ball.getLocation()) > 0){
+						player.sendMessage("Missed!");
+					}
+					ball.setGravity(true);
+					ball.setVelocity(ball.getVelocity().multiply(Math.random()).add(Vector.getRandom().multiply(0.3)));
+				}
+				return true;
+			}
+		}
+		return false;
 	}
 	public static Projectile playWithCoach(Player player, ArmorStand coach, String ballType){
 		Vector knockedVec = player.getLocation().toVector().subtract(coach.getLocation().toVector()).normalize();
@@ -135,10 +190,11 @@ public class SnowballGameAPI {
 			tracker = Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_InFlight"));
 		}
 		player.sendMessage("Catch the ball!!!");
-		return SnowballGameAPI.launch((ProjectileSource)coach, false, ballType, "batted", knockedVec, Vector.getRandom().normalize().multiply(0.0015 * knockedVec.length()), 0, 0, tracker, coach.getEyeLocation().add(knockedVec.clone().normalize().multiply(0.5)), new Vector(0,0,0));
+		return SnowballGameAPI.launch((ProjectileSource)coach, null, false, ballType, "batted", knockedVec, Vector.getRandom().normalize().multiply(0.0015 * knockedVec.length()), 0, 0, tracker, coach.getEyeLocation().add(knockedVec.clone().normalize().multiply(0.5)), new Vector(0,0,0));
 
 	}
-	public static Projectile bounce(Projectile ball, Block hitBlock, Vector repulsion, Vector spinVector){
+
+	public static Projectile bounce(Projectile ball, Block hitBlock, Vector repulsion, Vector spinVector, boolean isFirst){
 		if(repulsion.getX() < 0 || repulsion.getY() < 0 || repulsion.getZ() < 0){
 			Bukkit.getLogger().info("Repulsion rate must be positive.");
 			return ball;
@@ -180,9 +236,7 @@ public class SnowballGameAPI {
 				velocity.zero();
 			}else{
 				hitLoc = hitLoc.add(velocity);
-				while(!(hitLoc.getBlock().getType() == Material.AIR || hitLoc.getBlock().isLiquid())){
-					hitLoc.setY(hitLoc.getY() + 0.1);
-				}
+			    hitLoc.setY(hitLoc.getY() + 0.1);
 			}
 		}else{
 			Vector linear = new Vector(0,0,0);
@@ -190,7 +244,7 @@ public class SnowballGameAPI {
 			if(ball.hasMetadata("spin")){
 				ballSpin = spinVector;
 			}
-			if(ballSpin.length() != 0){
+			if(ballSpin.length() != 0 && velocity.length() != 0){
 				moveFromSpin = velocity.clone().multiply(-1).getCrossProduct(ballSpin).normalize().multiply(ballSpin.length() * 11);
 			}
 			if(hitFace == BlockFace.SOUTH || hitFace == BlockFace.NORTH){
@@ -205,7 +259,11 @@ public class SnowballGameAPI {
 			}
 			Vector normal = linear.clone().subtract(velocity).normalize();
 			moveFromSpin = new Vector(moveFromSpin.getX() * repulsion.getX(), moveFromSpin.getY() * repulsion.getY(), moveFromSpin.getZ() * repulsion.getZ());
-			double angle = velocity.angle(linear) / Math.toRadians(90);
+			double angle = velocity.angle(linear);
+			if(Double.isNaN(angle)){
+				angle = 0;
+			}
+			angle = angle / Math.toRadians(90);
 			velocity.setX(x * Math.pow(repulsion.getX(), angle));
 			velocity.setY(y * Math.pow(repulsion.getY(), angle));
 			velocity.setZ(z * Math.pow(repulsion.getZ(), angle));
@@ -214,10 +272,12 @@ public class SnowballGameAPI {
 			ballSpin.multiply(0.01).add(linear.getCrossProduct(normal).multiply(0.003));
 		}
 		ball.remove();
-		bounced = (Projectile)SnowballGameAPI.launch(ball.getShooter(), false, ball.getMetadata("ballType").get(0).asString(), null, velocity, new Vector(0,0,0), 0, 0, null, hitLoc, new Vector(0,0,0));
+		bounced = (Projectile)SnowballGameAPI.launch(ball.getShooter(), null, false, ball.getMetadata("ballType").get(0).asString(), null, velocity, new Vector(0,0,0), 0, 0, null, hitLoc, new Vector(0,0,0));
 		bounced.setMetadata("spin", new FixedMetadataValue(plugin, ballSpin));
 		bounced.setMetadata("bouncedLoc", new FixedMetadataValue(plugin, hitLoc));
 		bounced.setMetadata("samePlace", new FixedMetadataValue(plugin, samePlace));
+		BallBounceEvent bounceEvent = new BallBounceEvent(bounced, hitBlock, ball, isFirst);
+		Bukkit.getPluginManager().callEvent(bounceEvent);
 		return bounced;
 	}
 	public static Vector getBatmoveFromName(Location eye, double roll, int rolld, String batName){

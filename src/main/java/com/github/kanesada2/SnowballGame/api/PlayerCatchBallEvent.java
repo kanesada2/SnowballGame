@@ -1,4 +1,4 @@
-package com.github.kanesada2.SnowballGame;
+package com.github.kanesada2.SnowballGame.api;
 
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;

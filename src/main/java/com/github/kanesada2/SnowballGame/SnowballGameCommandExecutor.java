@@ -19,6 +19,8 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 
+import com.github.kanesada2.SnowballGame.api.SnowballGameAPI;
+
 public class SnowballGameCommandExecutor implements CommandExecutor, TabCompleter {
 
 	private SnowballGame plugin;
