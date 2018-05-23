@@ -51,6 +51,7 @@ public class BallMovingTask extends BukkitRunnable {
     	Vector velocity = ball.getVelocity();
     	if(spinVector.length() != 0 || acceleration != 0){
 	    	actualMove = velocity.getCrossProduct(spinVector);
+	    	this.spinVector.multiply(0.99);
 	    	if(actualMove.length() != 0){
 	    		actualMove.normalize().multiply(spinVector.length());
 	    	}

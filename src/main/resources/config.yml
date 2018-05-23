@@ -113,11 +113,18 @@ Umpire:
     Top: 1.7
     # the height(from the ground) of the bottom of the strike-zone.
     Bottom: 0.5
+Base:
+    # true/false (If true, players can place a base which is useful for jugding safe or out.)
+    Enabled_Base: true
+    # 'UmpireName' (Default name to display for the custom Armor_Stand)
+    Base_Name: 'Base'
 Coach: 
     # true/false (If true, players can summon custom Armor_Stand which hit the ball when you practice fielding.)
     Enabled_Coach: true
     # 'CoachName' (Default name to display for the custom Armor_Stand)
     Coach_Name: 'Coach'
+    # The limit of "/sbg please" command
+    Coach_Range: 120
 Broadcast:
    # About the message of swinging a bat.
    Swing:
@@ -148,6 +155,16 @@ Broadcast:
    Strike:
        Range: 100
        Message: '[[YELLOW]][[BOLD]]*** STRIKE [[SPEED]] [[TYPE]]  PITCHED BY [[PLAYER]]***'
+   # About the message of runner reaching the base.
+   Reach_Base:
+       Enabled: true
+       Range: 50
+       Message: '[[RED]][[BOLD]]*** [[PLAYER]] REACHES THE BASE ***'
+   # About the message of fielder touching the base with holding a ball.
+   Touch_Base:
+       Enabled: true
+       Range: 50
+       Message: '[[DARK_PURPLE]][[BOLD]]*** [[PLAYER]] TOUCHES THE BASE ***'
 #If you want to know about the format of "Particle" section, you should see https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html
 Particle:
     # When a player catch the ball with his glove.

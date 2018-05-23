@@ -20,8 +20,6 @@ public class SnowballGame extends JavaPlugin implements Listener{
         commandExecutor = new SnowballGameCommandExecutor(this);
         getCommand("SnowballGame").setExecutor(commandExecutor);
         this.getConfig().options().copyDefaults(true);
-        this.getConfig().set("Glove.SideArm_Glove_Name", null);
-        this.getConfig().set("Glove.Submarine_Glove_Name", null);
         this.saveConfig();
         getLogger().info("SnowballGame Enabled!");
     }
@@ -40,6 +38,7 @@ public class SnowballGame extends JavaPlugin implements Listener{
     	getServer().addRecipe(Util.getBatRecipe());
     	getServer().addRecipe(Util.getGloveRecipe());
     	getServer().addRecipe(Util.getUmpireRecipe());
+    	getServer().addRecipe(Util.getBaseRecipe());
     	getServer().addRecipe(Util.getCoachRecipe());
     	getLogger().info("Custom Recipe Enabled!");
     }

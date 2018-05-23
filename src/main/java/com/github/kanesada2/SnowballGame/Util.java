@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
@@ -16,6 +17,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Snowball;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
@@ -23,7 +25,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 
 public final class Util {
-	 private Util() {}
+	private static SnowballGame plugin = SnowballGame.getPlugin(SnowballGame.class);
+	private Util() {
+	 }
 
 	 public static void causeKnockBack(Player player, Projectile projectile){
 		 double health = player.getHealth();
@@ -65,7 +69,7 @@ public final class Util {
 	        input = input.replaceAll("\\Q[[RESET]]\\E", ChatColor.RESET.toString());
 	        return input;
 	 }
-	 public static void broadcastRange(SnowballGame plugin, Entity sender, String msg, int range){
+	 public static void broadcastRange(Entity sender, String msg, int range){
 		 if(range > 0){
 			 range *= range;
 	         Location location = sender.getLocation();
@@ -112,32 +116,35 @@ public final class Util {
 	 public static boolean isUmpire(ItemStack item){
 		 return isMyItem(item) && item.getType() == Material.QUARTZ_BLOCK;
 	 }
+	 public static boolean isBase(ItemStack item){
+		 return isMyItem(item) && item.getType() == Material.STEP && item.getDurability() == 7;
+	 }
 	 public static boolean isCoach(ItemStack item){
 		 return isMyItem(item) && item.getType() == Material.ARMOR_STAND;
 	 }
 	 public static ItemStack getBall(String type){
 		 ItemStack ball = new ItemStack(Material.SNOW_BALL);
 		 ItemMeta ballMeta = ball.getItemMeta();
-		 String name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Ball_Name");
+		 String name = plugin.getConfig().getString("Ball.Ball_Name");
 		 List<String> lore = new ArrayList<String>();
 		 lore.add("SnowballGame Item");
 		 lore.add("Ball");
 		 switch(type){
 			 case "highest":
 				 lore.add("Highest-repulsion");
-				 name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Repulsion.Highest");
+				 name = plugin.getConfig().getString("Ball.Repulsion.Highest");
 				 break;
 			 case "higher":
 				 lore.add("Higher-repulsion");
-				 name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Repulsion.Higher");
+				 name = plugin.getConfig().getString("Ball.Repulsion.Higher");
 				 break;
 			 case "lower":
 				 lore.add("Lower-repulsion");
-				 name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Repulsion.Lower");
+				 name = plugin.getConfig().getString("Ball.Repulsion.Lower");
 				 break;
 			 case "lowest":
 				 lore.add("Lowest-repulsion");
-				 name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Ball.Repulsion.Lowest");
+				 name = plugin.getConfig().getString("Ball.Repulsion.Lowest");
 				 break;
 		 }
 		 ballMeta.setLore(lore);
@@ -148,11 +155,14 @@ public final class Util {
 	 public static ItemStack getBat(){
 		 ItemStack bat = new ItemStack(Material.BOW);
 		 ItemMeta batMeta = bat.getItemMeta();
+		 bat.setDurability((short)384);
+		 batMeta.setUnbreakable(true);
+		 batMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
 		 List<String> lore = new ArrayList<String>();
 		 lore.add("SnowballGame Item");
 		 lore.add("Bat");
 		 batMeta.setLore(lore);
-		 String name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Bat.Bat_Name");
+		 String name = plugin.getConfig().getString("Bat.Bat_Name");
 		 batMeta.setDisplayName(name);
 		 bat.setItemMeta(batMeta);
 		 return bat;
@@ -164,7 +174,7 @@ public final class Util {
 		 lore.add("SnowballGame Item");
 		 lore.add("Glove");
 		 gloveMeta.setLore(lore);
-		 String name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Glove.Glove_Name");
+		 String name = plugin.getConfig().getString("Glove.Glove_Name");
 		 gloveMeta.setDisplayName(name);
 		 glove.setItemMeta(gloveMeta);
 		 return glove;
@@ -176,19 +186,31 @@ public final class Util {
 		 lore.add("SnowballGame Item");
 		 lore.add("Umpire");
 		 umpireMeta.setLore(lore);
-		 String name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Umpire.Umpire_Name");
+		 String name = plugin.getConfig().getString("Umpire.Umpire_Name");
 		 umpireMeta.setDisplayName(name);
 		 umpire.setItemMeta(umpireMeta);
 		 return umpire;
+	 }
+	 public static ItemStack getBase(){
+		 ItemStack base = new ItemStack(Material.STEP,1,(short)7);
+		 ItemMeta baseMeta = base.getItemMeta();
+		 List<String> lore = new ArrayList<String>();
+		 lore.add("SnowballGame Item");
+		 lore.add("Base");
+		 baseMeta.setLore(lore);
+		 String name = plugin.getConfig().getString("Base.Base_Name");
+		 baseMeta.setDisplayName(name);
+		 base.setItemMeta(baseMeta);
+		 return base;
 	 }
 	 public static ItemStack getCoach(){
 		 ItemStack coach = new ItemStack(Material.ARMOR_STAND);
 		 ItemMeta coachMeta = coach.getItemMeta();
 		 List<String> lore = new ArrayList<String>();
 		 lore.add("SnowballGame Item");
-		 lore.add("coach");
+		 lore.add("Coach");
 		 coachMeta.setLore(lore);
-		 String name = SnowballGame.getPlugin(SnowballGame.class).getConfig().getString("Coach.Coach_Name");
+		 String name = plugin.getConfig().getString("Coach.Coach_Name");
 		 coachMeta.setDisplayName(name);
 		 coach.setItemMeta(coachMeta);
 		 return coach;
@@ -196,7 +218,8 @@ public final class Util {
 	 public static ShapedRecipe getBallRecipe(String type){
 		 ItemStack ball = getBall(type);
 		 ball.setAmount(4);
-		 ShapedRecipe ballRecipe = new ShapedRecipe(ball);
+		 NamespacedKey key = new NamespacedKey(plugin, plugin.getDescription().getName() + ball.getItemMeta().getDisplayName() + type);
+		 ShapedRecipe ballRecipe = new ShapedRecipe(key, ball);
 		 Material inclusion = Material.SNOW_BALL;
 		 switch(type){
 		 case "highest":
@@ -220,28 +243,40 @@ public final class Util {
 	 }
 	 public static ShapedRecipe getBatRecipe(){
 		 ItemStack bat = getBat();
-		 ShapedRecipe batRecipe = new ShapedRecipe(bat);
+		 NamespacedKey key = new NamespacedKey(plugin, plugin.getDescription().getName() + bat.getItemMeta().getDisplayName());
+		 ShapedRecipe batRecipe = new ShapedRecipe(key, bat);
 		 batRecipe.shape("  S"," S ","S  ");
 		 batRecipe.setIngredient('S', Material.STICK);
 		 return batRecipe;
 	 }
 	 public static ShapedRecipe getGloveRecipe(){
 		 ItemStack glove = getGlove();
-		 ShapedRecipe gloveRecipe = new ShapedRecipe(glove);
+		 NamespacedKey key = new NamespacedKey(plugin, plugin.getDescription().getName() + glove.getItemMeta().getDisplayName());
+		 ShapedRecipe gloveRecipe = new ShapedRecipe(key, glove);
 		 gloveRecipe.shape("LLL","LLL"," L ");
 		 gloveRecipe.setIngredient('L', Material.LEATHER);
 		 return gloveRecipe;
 	 }
 	 public static ShapelessRecipe getUmpireRecipe(){
 		 ItemStack umpire = getUmpire();
-		 ShapelessRecipe umpireRecipe = new ShapelessRecipe(umpire);
+		 NamespacedKey key = new NamespacedKey(plugin, plugin.getDescription().getName() + umpire.getItemMeta().getDisplayName());
+		 ShapelessRecipe umpireRecipe = new ShapelessRecipe(key, umpire);
 		 umpireRecipe.addIngredient(1, Material.QUARTZ_BLOCK);
 		 umpireRecipe.addIngredient(1, Material.OBSERVER);
 		 return umpireRecipe;
 	 }
+	 public static ShapelessRecipe getBaseRecipe(){
+		 ItemStack base = getBase();
+		 NamespacedKey key = new NamespacedKey(plugin, plugin.getDescription().getName() + base.getItemMeta().getDisplayName());
+		 ShapelessRecipe baseRecipe = new ShapelessRecipe(key, base);
+		 baseRecipe.addIngredient(1, Material.STEP,7);
+		 baseRecipe.addIngredient(1, Material.OBSERVER);
+		 return baseRecipe;
+	 }
 	 public static ShapelessRecipe getCoachRecipe(){
 		 ItemStack coach = getCoach();
-		 ShapelessRecipe coachRecipe = new ShapelessRecipe(coach);
+		 NamespacedKey key = new NamespacedKey(plugin, plugin.getDescription().getName() + coach.getItemMeta().getDisplayName());
+		 ShapelessRecipe coachRecipe = new ShapelessRecipe(key, coach);
 		 coachRecipe.addIngredient(1, Material.ARMOR_STAND);
 		 coachRecipe.addIngredient(1, Material.DISPENSER);
 		 return coachRecipe;

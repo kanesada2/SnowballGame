@@ -2,6 +2,7 @@ package com.github.kanesada2.SnowballGame;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -58,6 +59,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 		            completions.add("Glove");
 		            completions.add("Umpire");
 		            completions.add("Coach");
+		            completions.add("Base");
 				}else {
 		            if("Ball".startsWith(args[1])){
 		            	completions.add("Ball");
@@ -73,6 +75,9 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 		            }
 		            if("Coach".startsWith(args[1])){
 		            	completions.add("Coach");
+		            }
+		            if("Ball".startsWith(args[1])){
+		            	completions.add("Base");
 		            }
 		        }
 		       }
@@ -144,39 +149,46 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 						return false;
 					}
 					Player player = (Player)sender;
-					if(!player.getInventory().containsAtLeast(Util.getBall("normal"), 1)){
-						player.sendMessage("You must have at least one normal-ball to send this command.");
-						return false;
-					}else{
-						if(player.getGameMode() != GameMode.CREATIVE){
-							ItemStack[] inventory = player.getInventory().getContents();
-							for(ItemStack item : inventory){
-								if(item != null && Util.isBall(item) && item.getItemMeta().getDisplayName().equalsIgnoreCase(plugin.getConfig().getString("Ball.Ball_Name")) && item.getItemMeta().getLore().size() == 2){
-									item.setAmount(item.getAmount() - 1);
-									break;
-								}
+					Inventory inventory = player.getInventory();
+					ItemStack item = Util.getBall("normal");
+					for(Iterator<ItemStack> iterator = inventory.iterator(); iterator.hasNext();){
+						item = iterator.next();
+						if(item != null && Util.isBall(item)){
+							if(player.getGameMode() != GameMode.CREATIVE){
+								ItemStack ball = item.clone();
+								item.setAmount(item.getAmount() - 1);
+								item = ball;
 							}
-						}
-						if(player.hasMetadata("onMotion")){
-							player.sendMessage("Your coach can't hit the ball so quickly.");
+							break;
+						}else if(!iterator.hasNext()){
+							player.sendMessage("You must have at least one ball to send this command.");
 							return false;
 						}
-						Collection <Entity> entities = player.getNearbyEntities(100, 10, 100);
-						if(entities.isEmpty()){
+					}
+					if(player.hasMetadata("onMotion")){
+						player.sendMessage("Your coach can't hit the ball so quickly.");
+						return false;
+					}
+					int range = plugin.getConfig().getInt("Coach.Coach_Range",120);
+					Collection <Entity> entities = player.getNearbyEntities(range, 10, range);
+					if(entities.isEmpty()){
+						player.sendMessage("You are too far from your coach to practice.");
+						return false;
+					}
+					for(Iterator<Entity> eitr = entities.iterator(); eitr.hasNext();){
+						Entity entity = eitr.next();
+						if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Coach.Coach_Name"))){
+							SnowballGameAPI.playWithCoach(player, (ArmorStand)entity, Util.getBallType(item.getItemMeta().getLore()));
+							break;
+						}else if(!eitr.hasNext()){
 							player.sendMessage("You are too far from your coach to practice.");
 							return false;
 						}
-						for(Entity entity : entities){
-							if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Coach.Coach_Name"))){
-								SnowballGameAPI.playWithCoach(player, (ArmorStand)entity, "normal");
-								break;
-							}
-						}
-						player.setMetadata("onMotion", new FixedMetadataValue(plugin, true));
-						new PlayerCoolDownTask(plugin, player).runTaskLater(plugin, plugin.getConfig().getInt("Ball.Cool_Time", 30));
-						return true;
 					}
-			}
+					player.setMetadata("onMotion", new FixedMetadataValue(plugin, true));
+					new PlayerCoolDownTask(plugin, player).runTaskLater(plugin, plugin.getConfig().getInt("Ball.Cool_Time", 30));
+					return true;
+				}
 			case 2:
 				if(!(sender instanceof Player)){
 					sender.sendMessage("Please send this command in game.");
@@ -201,6 +213,8 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 					item = Util.getUmpire();
 				}else if(args[1].equalsIgnoreCase("Coach")){
 					item = Util.getCoach();
+				}else if(args[1].equalsIgnoreCase("Base")){
+					item = Util.getBase();
 				}else{
 					sender.sendMessage("SnowballGame can't provide such a item.");
 					return false;
