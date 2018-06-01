@@ -2,6 +2,7 @@ package com.github.kanesada2.SnowballGame;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
 import org.bukkit.Bukkit;
@@ -84,14 +85,14 @@ public final class Util {
 		}
 	 }
 	 public static boolean doesRegardUp(Block block){
-		 List <Material> excluded = Data.regardUpList();
+		 HashSet <Material> excluded = Data.regardUpList();
 		 if(excluded.contains(block.getType())){
 			 return true;
 		 }
 		 return false;
 	 }
 	 public static boolean doesRepel(Block block){
-		 List <Material> excluded = Data.noRepelList();
+		 HashSet <Material> excluded = Data.noRepelList();
 		 if(excluded.contains(block.getType())){
 			 return false;
 		 }

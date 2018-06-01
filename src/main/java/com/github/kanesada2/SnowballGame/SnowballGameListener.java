@@ -278,17 +278,17 @@ public class SnowballGameListener implements Listener {
 		if(event.getBow().hasItemMeta() && event.getBow().getItemMeta().hasDisplayName()){
 			bowName = event.getBow().getItemMeta().getDisplayName();
 		}
-		int rolld = 1;
+		int rolld = -1;
 		if(Util.isBat(player.getInventory().getItemInMainHand())){
 			if(player.getMainHand() == MainHand.LEFT){
-				rolld = -1;
+				rolld = 1;
 			}
 		}else if(Util.isBat(player.getInventory().getItemInOffHand()) && !Util.isBat(player.getInventory().getItemInMainHand())){
 			if(player.getMainHand() == MainHand.RIGHT){
-				rolld = -1;
+				rolld = 1;
 			}
 		}
-		Vector batMove = SnowballGameAPI.getBatmoveFromName(player.getEyeLocation(), (Math.PI / 2 + 0.01) * -rolld, rolld, bowName).subtract(SnowballGameAPI.getBatmoveFromName(player.getEyeLocation(), Math.PI / 2 * -rolld, rolld, bowName)).normalize();
+		Vector batMove = SnowballGameAPI.getBatPositionFromName(player.getEyeLocation(), (Math.PI / 2 + 0.01) * rolld, rolld, bowName).subtract(SnowballGameAPI.getBatPositionFromName(player.getEyeLocation(), Math.PI / 2 * rolld, rolld, bowName)).toVector().normalize();
 		PlayerSwingBatEvent swingEvent = new PlayerSwingBatEvent(player, event.getBow(), impactLoc, batRange, force, 1.3, batMove, 1);
 		Bukkit.getPluginManager().callEvent(swingEvent);
 		if(swingEvent.isCancelled()){
@@ -304,13 +304,10 @@ public class SnowballGameListener implements Listener {
 			}
 			if(plugin.getConfig().getBoolean("Particle.Swing_Bat_Sequent.Enabled") && Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Swing_Bat_Sequent")) != null){
 				Location eye = player.getEyeLocation();
-				for(double i=0; Math.abs(i)<Math.PI; i=i-0.15708 * rolld){
-					Vector swing = SnowballGameAPI.getBatmoveFromName(eye, i, rolld, bowName);
-					if(swing.length() != 0){
-						swing.multiply(0.8);
-					}
-					swing.setY(swing.getY() + eye.getDirection().getY() + 1);
-					player.getWorld().spawnParticle(Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Swing_Bat_Sequent")), eye.clone().add(swing), 1);
+				for(double i=0; Math.abs(i)<Math.PI; i=i+0.15708 * rolld){
+					Location swing = SnowballGameAPI.getBatPositionFromName(eye, i, rolld, bowName);
+					swing.add(0, eye.getDirection().getY() + 1, 0);
+					player.getWorld().spawnParticle(Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Swing_Bat_Sequent")), swing, 1);
 				}
 			}
 		}

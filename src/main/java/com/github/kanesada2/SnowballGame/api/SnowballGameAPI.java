@@ -244,7 +244,7 @@ public class SnowballGameAPI {
 		BlockFace hitFace = hitBlock.getFace(hitLoc.getBlock());
 		if(Util.doesRegardUp(hitBlock)){
 			hitFace = BlockFace.UP;
-		}else if(hitFace == null || hitFace.toString().contains("_")){
+		}else if(hitFace == null || hitFace.equals(BlockFace.SELF) || hitFace.toString().contains("_")){
 			 BlockIterator blockIterator = new BlockIterator(hitLoc.getWorld(), hitLoc.toVector(), velocity, 0.0D, 3);
 			 Block previousBlock = hitLoc.getBlock();
 			 Block nextBlock = blockIterator.next();
@@ -330,11 +330,11 @@ public class SnowballGameAPI {
 		Bukkit.getPluginManager().callEvent(bounceEvent);
 		return bounced;
 	}
-	public static Vector getBatmoveFromName(Location eye, double roll, int rolld, String batName){
-		 Location pushD = eye.clone();
-		 pushD.setYaw(pushD.getYaw() + (float)(90 * rolld));
-		 Vector direction = pushD.getDirection().setY(0).normalize();
-		 SnowballGame plugin = SnowballGame.getPlugin(SnowballGame.class);
+	public static Location getBatPositionFromName(Location eye, double roll , int rollDirection, String batName){
+		Location eyeLoc = eye.clone();
+		eyeLoc.setYaw(eyeLoc.getYaw() - (float)(90 * rollDirection - Math.toDegrees(roll)));
+		Vector push = eyeLoc.getDirection().setY(0).normalize();
+		SnowballGame plugin = SnowballGame.getPlugin(SnowballGame.class);
 		 double upper = 0;
 			if(plugin.getConfig().getStringList("Bat.Swing.Type").contains(batName)){
 				upper = plugin.getConfig().getDouble("Bat.Swing." + batName + ".Fly", 0);
@@ -345,12 +345,12 @@ public class SnowballGameAPI {
 					upper = upper * 0.5;
 				}
 			}
-		 double theta = Math.abs(roll * 2) + Math.PI * upper;
-		 double x = Math.cos(roll) * direction.normalize().getX() * (theta - Math.sin(theta)) - Math.sin(roll) * direction.normalize().getZ() * (theta - Math.sin(theta));
-		 double y = -(1 - Math.cos(theta));
-		 double z = Math.sin(roll) * direction.normalize().getX() * (theta - Math.sin(theta)) + Math.cos(roll) * direction.normalize().getZ() * (theta - Math.sin(theta));
-		 return new Vector (x,y,z);
-	 }
+		double theta = Math.abs(roll * 2) + Math.PI * upper;
+		double x = push.normalize().getX() * (theta - Math.sin(theta));
+		double y = -(1 - Math.cos(theta));
+		double z = push.normalize().getZ() * (theta - Math.sin(theta));
+	    return eye.clone().add(x,y,z);
+	}
 	public static HashMap<String, Object> getBallValuesFromName(String ballName, Vector velocity, boolean isRightHanded, boolean isFromDispenser){
 		Vector moveVector = new Vector(0,0,0);
 		FileConfiguration config = plugin.getConfig();
