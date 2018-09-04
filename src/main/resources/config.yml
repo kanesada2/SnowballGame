@@ -16,7 +16,7 @@ Ball:
           - 'Fast'
           - 'Slider'
           - 'Curve'
-          - 'Folk'
+          - 'Fork'
           - 'Sinker'
           - 'Shuuto'
           - 'Knuckle'
@@ -41,7 +41,7 @@ Ball:
             Vertical: -0.02
             Horizontal: -0.02
             Acceleration: -0.01
-        Folk:
+        Fork:
             Velocity: 1
             Vertical: -0.02
             Horizontal: 0
