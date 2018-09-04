@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.kanesada2</groupId>
   <artifactId>SnowballGame</artifactId>
-  <version>1.1.4</version>
+  <version>1.1.4_SPIGOT1.13~</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
