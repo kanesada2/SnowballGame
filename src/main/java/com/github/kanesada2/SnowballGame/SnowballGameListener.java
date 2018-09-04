@@ -527,7 +527,7 @@ public class SnowballGameListener implements Listener {
 			}
 			player.setVelocity(player.getLocation().getDirection().normalize().multiply(1.2).setY(0));
 			player.setMetadata("onSlide", new FixedMetadataValue(plugin,true));
-			new PlayerCoolDownTask(plugin,player).runTaskLater(plugin, 10);
+			new PlayerCoolDownTask(plugin,player).runTaskLater(plugin, 30);
 			Location newfacing = player.getLocation();
 			newfacing.setPitch(60);
 			player.teleport(newfacing);
