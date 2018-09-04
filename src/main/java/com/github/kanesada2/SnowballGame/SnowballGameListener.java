@@ -87,7 +87,7 @@ public class SnowballGameListener implements Listener {
 				if(player.getMainHand() == MainHand.LEFT){
 					isR = false;
 				}
-			}else if(Util.isBall(player.getInventory().getItemInOffHand()) && player.getInventory().getItemInMainHand().getType() != Material.SNOW_BALL){
+			}else if(Util.isBall(player.getInventory().getItemInOffHand()) && player.getInventory().getItemInMainHand().getType() != Material.SNOWBALL){
 				hand = player.getInventory().getItemInOffHand();
 				if(player.getMainHand() == MainHand.RIGHT){
 					isR = false;
@@ -364,21 +364,33 @@ public class SnowballGameListener implements Listener {
 		        	player.removeMetadata("catchTried", plugin);
 		        }
 		      }, (4L));
-		}else if(event.hasItem() && Util.isBat(event.getItem())&& event.getAction() == Action.LEFT_CLICK_BLOCK){
-			if(!(event.getClickedBlock().getDrops().contains(new ItemStack(Material.STEP,1,(short)7)) || event.getClickedBlock().getType() == Material.QUARTZ_BLOCK)){
+		}else if(event.getAction() == Action.LEFT_CLICK_BLOCK){
+			if(!(event.getClickedBlock().getDrops().contains(new ItemStack(Material.QUARTZ_SLAB)) || event.getClickedBlock().getType() == Material.QUARTZ_BLOCK)){
+				return;
+			}
+			String msg;
+			int range;
+			Collection<Entity> entities;
+			Location loc = player.getLocation();
+			if(plugin.getConfig().getBoolean("Glove.Enabled_Glove") && Util.isGlove(player.getInventory().getItemInOffHand()) && player.getInventory().getItemInMainHand().getType() == Material.AIR){
+				msg = plugin.getConfig().getString("Broadcast.Standing_Base.Message");
+				range = plugin.getConfig().getInt("Broadcast.Standing_Base.Range");
+				entities = loc.getWorld().getNearbyEntities(loc, 2, 2, 2);
+			}else if(event.hasItem() && Util.isBat(event.getItem())){
+				msg = plugin.getConfig().getString("Broadcast.Reach_Base.Message");
+				range = plugin.getConfig().getInt("Broadcast.Reach_Base.Range");
+				entities = loc.getWorld().getNearbyEntities(loc, 0.9, 1, 0.9);
+			}else{
 				return;
 			}
 			event.setCancelled(true);
-			Location loc = player.getLocation();
-			String msg = plugin.getConfig().getString("Broadcast.Reach_Base.Message");
-			int range = plugin.getConfig().getInt("Broadcast.Reach_Base.Range");
 			msg = msg.replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString());
-			msg = Util.addColors(msg);
-			Collection <Entity> entities = loc.getWorld().getNearbyEntities(loc, 0.9, 1, 0.9);
 			for (Entity entity : entities) {
-				if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Base.Base_Name"))){
+				if(entity instanceof ArmorStand && Util.isUmpire(((ArmorStand)entity).getBoots()) && entity.getCustomName() != null){
+					msg = msg.replaceAll("\\Q[[BASE]]\\E", entity.getCustomName());
 					Util.broadcastRange(player, Util.addColors(msg), range);
-				}else if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Umpire.Umpire_Name"))){
+				}else if(entity instanceof ArmorStand && Util.isBase(((ArmorStand)entity).getBoots()) && entity.getCustomName() != null){
+					msg = msg.replaceAll("\\Q[[BASE]]\\E", entity.getCustomName());
 					Util.broadcastRange(player, Util.addColors(msg), range);
 				}
 			}
@@ -411,7 +423,12 @@ public class SnowballGameListener implements Listener {
 		if(Util.isUmpire(event.getItemInHand()) && plugin.getConfig().getBoolean("Umpire.Enabled_Umpire")){
 			Location location = event.getBlock().getLocation().add(new Vector(0.5, 1, 0.5));
 			ArmorStand pl = (ArmorStand)location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
-			pl.setCustomName(plugin.getConfig().getString("Umpire.Umpire_Name"));
+			if(event.getItemInHand().getItemMeta().hasDisplayName()){
+				pl.setCustomName(event.getItemInHand().getItemMeta().getDisplayName());
+			}else{
+				pl.setCustomName(plugin.getConfig().getString("Umpire.Umpire_Name"));
+			}
+			pl.setBoots(Util.getUmpire());
 			pl.setCustomNameVisible(true);
 			pl.setVisible(false);
 			pl.setCollidable(false);
@@ -421,7 +438,12 @@ public class SnowballGameListener implements Listener {
 		}else if(Util.isBase(event.getItemInHand()) && plugin.getConfig().getBoolean("Base.Enabled_Base")){
 			Location location = event.getBlock().getLocation().add(0.5, 0.5, 0.5);
 			ArmorStand pl = (ArmorStand)location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
-			pl.setCustomName(plugin.getConfig().getString("Base.Base_Name"));
+			if(event.getItemInHand().getItemMeta().hasDisplayName()){
+				pl.setCustomName(event.getItemInHand().getItemMeta().getDisplayName());
+			}else{
+				pl.setCustomName(plugin.getConfig().getString("Base.Base_Name"));
+			}
+			pl.setBoots(Util.getBase());
 			pl.setCustomNameVisible(true);
 			pl.setVisible(false);
 			pl.setCollidable(false);
@@ -432,17 +454,17 @@ public class SnowballGameListener implements Listener {
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void onBaseBroken(BlockBreakEvent event){
-		if(!(event.getBlock().getType() == Material.QUARTZ_BLOCK || event.getBlock().getDrops().contains(new ItemStack(Material.STEP,1,(short)7)))){
+		if(!(event.getBlock().getType() == Material.QUARTZ_BLOCK || event.getBlock().getDrops().contains(new ItemStack(Material.QUARTZ_SLAB)))){
 			return;
 		}
 		Location loc = event.getBlock().getLocation();
 		Collection <Entity> entities = loc.getWorld().getNearbyEntities(loc, 2, 2, 2);
 		for (Entity entity : entities) {
-			if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Umpire.Umpire_Name"))){
+			if(entity instanceof ArmorStand && Util.isUmpire(((ArmorStand)entity).getBoots()) || entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Umpire.Umpire_Name", "Base"))){
 				entity.remove();
 				loc.getWorld().getBlockAt(loc).setType(Material.AIR);
 				loc.getWorld().dropItemNaturally(loc, Util.getUmpire());
-			}else if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Base.Base_Name"))){
+			}else if(entity instanceof ArmorStand && Util.isBase(((ArmorStand)entity).getBoots()) || entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Base.Base_Name", "Umpire"))){
 				entity.remove();
 				loc.getWorld().getBlockAt(loc).setType(Material.AIR);
 				loc.getWorld().dropItemNaturally(loc, Util.getBase());
@@ -462,7 +484,7 @@ public class SnowballGameListener implements Listener {
 				knocker.setCustomNameVisible(true);
 				knocker.setArms(true);
 				knocker.setGlowing(true);
-				knocker.getEquipment().setHelmet(new ItemStack(Material.SKULL_ITEM, 1, (short)4));
+				knocker.getEquipment().setHelmet(new ItemStack(Material.CREEPER_HEAD));
 				knocker.getEquipment().setChestplate(new ItemStack(Material.LEATHER_CHESTPLATE));
 				knocker.getEquipment().setLeggings(new ItemStack(Material.LEATHER_LEGGINGS));
 				knocker.getEquipment().setBoots(new ItemStack(Material.LEATHER_BOOTS));
@@ -490,13 +512,12 @@ public class SnowballGameListener implements Listener {
 			String msg = plugin.getConfig().getString("Broadcast.Touch_Base.Message");
 			int range = plugin.getConfig().getInt("Broadcast.Touch_Base.Range");
 			msg = msg.replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString());
-			msg = Util.addColors(msg);
 			Collection <Entity> entities = loc.getWorld().getNearbyEntities(loc, 0.8, 0.5, 0.8);
 			for (Entity entity : entities) {
-				if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Base.Base_Name"))){
-					Util.broadcastRange(player, Util.addColors(msg), range);
-				}else if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Umpire.Umpire_Name"))){
-					Util.broadcastRange(player, Util.addColors(msg), range);
+				if(entity instanceof ArmorStand && Util.isUmpire(((ArmorStand)entity).getBoots()) && entity.getCustomName() != null){
+					Util.broadcastRange(player, Util.addColors(msg).replaceAll("\\Q[[BASE]]\\E", entity.getCustomName()), range);
+				}else if(entity instanceof ArmorStand && Util.isBase(((ArmorStand)entity).getBoots()) && entity.getCustomName() != null){
+					Util.broadcastRange(player, Util.addColors(msg).replaceAll("\\Q[[BASE]]\\E", entity.getCustomName()), range);
 				}
 			}
 		}
@@ -521,13 +542,12 @@ public class SnowballGameListener implements Listener {
 		String msg = plugin.getConfig().getString("Broadcast.Touch_Base.Message");
 		int range = plugin.getConfig().getInt("Broadcast.Touch_Base.Range");
 		msg = msg.replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString());
-		msg = Util.addColors(msg);
 		Collection <Entity> entities = loc.getWorld().getNearbyEntities(loc, 0.8, 0.5, 0.8);
 		for (Entity entity : entities) {
-			if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Base.Base_Name"))){
-				Util.broadcastRange(player, Util.addColors(msg), range);
-			}else if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Umpire.Umpire_Name"))){
-				Util.broadcastRange(player, Util.addColors(msg), range);
+			if(entity instanceof ArmorStand && Util.isUmpire(((ArmorStand)entity).getBoots()) && entity.getCustomName() != null){
+				Util.broadcastRange(player, Util.addColors(msg).replaceAll("\\Q[[BASE]]\\E", entity.getCustomName()), range);
+			}else if(entity instanceof ArmorStand && Util.isBase(((ArmorStand)entity).getBoots()) && entity.getCustomName() != null){
+				Util.broadcastRange(player, Util.addColors(msg).replaceAll("\\Q[[BASE]]\\E", entity.getCustomName()), range);
 			}
 		}
 	}

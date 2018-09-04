@@ -56,7 +56,7 @@ public class SnowballGameAPI {
 			Bukkit.getPluginManager().callEvent(new BallThrownEvent(launched));
 			Collection<Entity> entities = launched.getNearbyEntities(50, 10, 50);
 			for (Entity entity : entities) {
-				if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Umpire.Umpire_Name"))){
+				if(entity instanceof ArmorStand && Util.isUmpire(((ArmorStand)entity).getBoots())){
 					Location inBottom = entity.getLocation().add(new Vector(-0.5, plugin.getConfig().getDouble("Umpire.Bottom"), -0.5));
 					Location outTop = entity.getLocation().add(new Vector(0.5, plugin.getConfig().getDouble("Umpire.Top") , 0.5));
 					new BallJudgeTask(launched, (ArmorStand)entity, inBottom, outTop, plugin).runTaskTimer(plugin, 0, 1);
@@ -124,7 +124,7 @@ public class SnowballGameAPI {
 				velocity.multiply(-0.3);
 				velocity.add(batMove.add(fromCenter.clone().normalize().multiply(2))).multiply(power * coefficient);
 				entity.remove();
-				center.getWorld().playSound(center, Sound.ENTITY_ENDERDRAGON_FIREBALL_EXPLODE , force, 1);
+				center.getWorld().playSound(center, Sound.ENTITY_DRAGON_FIREBALL_EXPLODE , force, 1);
 				Vector spinVector = fromCenter.getCrossProduct(velocity).normalize().multiply(fromCenter.length());
 				Particle tracker = null;
 				if(plugin.getConfig().getBoolean("Particle.BattedBall_InFlight.Enabled")){
@@ -235,7 +235,7 @@ public class SnowballGameAPI {
 			}
 			samePlace++;
 		}
-		if(hitBlock.getType() == Material.IRON_FENCE || hitBlock.getType() == Material.VINE){
+		if(hitBlock.getType() == Material.IRON_BARS || hitBlock.getType() == Material.VINE){
 			velocity.multiply(0.1);
 		}
 		Double x = velocity.getX();
@@ -255,7 +255,7 @@ public class SnowballGameAPI {
 			 hitFace = nextBlock.getFace(previousBlock);
 		 }
 		if(!Util.doesRepel(hitBlock) || samePlace > 5){
-			if(hitBlock.getType() == Material.WEB){
+			if(hitBlock.getType() == Material.COBWEB){
 				hitLoc = hitBlock.getLocation().add(0.5, 0, 0.5);
 				velocity.zero();
 			}else{
