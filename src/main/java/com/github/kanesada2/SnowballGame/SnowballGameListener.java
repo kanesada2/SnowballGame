@@ -87,7 +87,7 @@ public class SnowballGameListener implements Listener {
 				if(player.getMainHand() == MainHand.LEFT){
 					isR = false;
 				}
-			}else if(Util.isBall(player.getInventory().getItemInOffHand()) && player.getInventory().getItemInMainHand().getType() != Material.SNOWBALL){
+			}else if(Util.isBall(player.getInventory().getItemInOffHand()) && player.getInventory().getItemInMainHand().getType() != Material.SNOW_BALL){
 				hand = player.getInventory().getItemInOffHand();
 				if(player.getMainHand() == MainHand.RIGHT){
 					isR = false;
@@ -365,7 +365,7 @@ public class SnowballGameListener implements Listener {
 		        }
 		      }, (4L));
 		}else if(event.getAction() == Action.LEFT_CLICK_BLOCK){
-			if(!(event.getClickedBlock().getDrops().contains(new ItemStack(Material.QUARTZ_SLAB)) || event.getClickedBlock().getType() == Material.QUARTZ_BLOCK)){
+			if(!(event.getClickedBlock().getDrops().contains(new ItemStack(Material.STEP,1,(short)7)) || event.getClickedBlock().getType() == Material.QUARTZ_BLOCK)){
 				return;
 			}
 			String msg;
@@ -454,7 +454,7 @@ public class SnowballGameListener implements Listener {
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void onBaseBroken(BlockBreakEvent event){
-		if(!(event.getBlock().getType() == Material.QUARTZ_BLOCK || event.getBlock().getDrops().contains(new ItemStack(Material.QUARTZ_SLAB)))){
+		if(!(event.getBlock().getType() == Material.QUARTZ_BLOCK || event.getBlock().getDrops().contains(new ItemStack(Material.STEP,1,(short)7)))){
 			return;
 		}
 		Location loc = event.getBlock().getLocation();
@@ -484,7 +484,7 @@ public class SnowballGameListener implements Listener {
 				knocker.setCustomNameVisible(true);
 				knocker.setArms(true);
 				knocker.setGlowing(true);
-				knocker.getEquipment().setHelmet(new ItemStack(Material.CREEPER_HEAD));
+				knocker.getEquipment().setHelmet(new ItemStack(Material.SKULL_ITEM, 1, (short)4));
 				knocker.getEquipment().setChestplate(new ItemStack(Material.LEATHER_CHESTPLATE));
 				knocker.getEquipment().setLeggings(new ItemStack(Material.LEATHER_LEGGINGS));
 				knocker.getEquipment().setBoots(new ItemStack(Material.LEATHER_BOOTS));

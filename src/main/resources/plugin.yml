@@ -1,6 +1,6 @@
 name: SnowballGame
 main: com.github.kanesada2.SnowballGame.SnowballGame
-version: 1.1.3
+version: 1.1.4
 commands:
     SnowballGame:
       description: get SnowballGame's items.

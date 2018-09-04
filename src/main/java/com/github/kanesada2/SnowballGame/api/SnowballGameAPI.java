@@ -124,7 +124,7 @@ public class SnowballGameAPI {
 				velocity.multiply(-0.3);
 				velocity.add(batMove.add(fromCenter.clone().normalize().multiply(2))).multiply(power * coefficient);
 				entity.remove();
-				center.getWorld().playSound(center, Sound.ENTITY_DRAGON_FIREBALL_EXPLODE , force, 1);
+				center.getWorld().playSound(center, Sound.ENTITY_ENDERDRAGON_FIREBALL_EXPLODE , force, 1);
 				Vector spinVector = fromCenter.getCrossProduct(velocity).normalize().multiply(fromCenter.length());
 				Particle tracker = null;
 				if(plugin.getConfig().getBoolean("Particle.BattedBall_InFlight.Enabled")){
@@ -235,7 +235,7 @@ public class SnowballGameAPI {
 			}
 			samePlace++;
 		}
-		if(hitBlock.getType() == Material.IRON_BARS || hitBlock.getType() == Material.VINE){
+		if(hitBlock.getType() == Material.IRON_FENCE || hitBlock.getType() == Material.VINE){
 			velocity.multiply(0.1);
 		}
 		Double x = velocity.getX();
@@ -255,7 +255,7 @@ public class SnowballGameAPI {
 			 hitFace = nextBlock.getFace(previousBlock);
 		 }
 		if(!Util.doesRepel(hitBlock) || samePlace > 5){
-			if(hitBlock.getType() == Material.COBWEB){
+			if(hitBlock.getType() == Material.WEB){
 				hitLoc = hitBlock.getLocation().add(0.5, 0, 0.5);
 				velocity.zero();
 			}else{
