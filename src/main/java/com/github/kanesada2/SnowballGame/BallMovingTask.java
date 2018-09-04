@@ -64,7 +64,8 @@ public class BallMovingTask extends BukkitRunnable {
         	this.z += Math.random() * 0.3;
         	Vector toAdd = new Vector(Math.sin(x), Math.sin(y), Math.sin(z));
         	toAdd.multiply(random);
-        	velocity.add(toAdd);
+    		velocity.add(toAdd);
+
     	}
     	ball.setVelocity(velocity);
     	if(particle != null){

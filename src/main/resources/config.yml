@@ -159,12 +159,18 @@ Broadcast:
    Reach_Base:
        Enabled: true
        Range: 50
-       Message: '[[RED]][[BOLD]]*** [[PLAYER]] REACHES THE BASE ***'
+       Message: '[[RED]][[BOLD]]*** [[PLAYER]] REACHES THE [[BASE]] ***'
    # About the message of fielder touching the base with holding a ball.
    Touch_Base:
        Enabled: true
        Range: 50
-       Message: '[[DARK_PURPLE]][[BOLD]]*** [[PLAYER]] TOUCHES THE BASE ***'
+       Message: '[[DARK_PURPLE]][[BOLD]]*** [[PLAYER]] TOUCHES THE [[BASE]] ***'
+   # About the message of fielder is standing on the base.
+   Standing_Base:
+       Enabled: true
+       Range: 120
+       Message: '[[GOLD]][[BOLD]]*** [[PLAYER]] IS STANDING ON THE [[BASE]] ***'
+       
 #If you want to know about the format of "Particle" section, you should see https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html
 Particle:
     # When a player catch the ball with his glove.

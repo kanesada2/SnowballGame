@@ -22,6 +22,7 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.ShapedRecipe;
 import org.bukkit.inventory.ShapelessRecipe;
+import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 
@@ -106,7 +107,7 @@ public final class Util {
 		 return itemMeta.hasLore() && itemMeta.getLore().contains("SnowballGame Item");
 	 }
 	 public static boolean isBall(ItemStack item){
-		 return isMyItem(item) && item.getType() == Material.SNOW_BALL;
+		 return isMyItem(item) && item.getType() == Material.SNOWBALL;
 	 }
 	 public static boolean isBat(ItemStack item){
 		 return isMyItem(item) && item.getType() == Material.BOW;
@@ -118,13 +119,13 @@ public final class Util {
 		 return isMyItem(item) && item.getType() == Material.QUARTZ_BLOCK;
 	 }
 	 public static boolean isBase(ItemStack item){
-		 return isMyItem(item) && item.getType() == Material.STEP && item.getDurability() == 7;
+		 return isMyItem(item) && item.getType() == Material.QUARTZ_SLAB;
 	 }
 	 public static boolean isCoach(ItemStack item){
 		 return isMyItem(item) && item.getType() == Material.ARMOR_STAND;
 	 }
 	 public static ItemStack getBall(String type){
-		 ItemStack ball = new ItemStack(Material.SNOW_BALL);
+		 ItemStack ball = new ItemStack(Material.SNOWBALL);
 		 ItemMeta ballMeta = ball.getItemMeta();
 		 String name = plugin.getConfig().getString("Ball.Ball_Name");
 		 List<String> lore = new ArrayList<String>();
@@ -156,7 +157,7 @@ public final class Util {
 	 public static ItemStack getBat(){
 		 ItemStack bat = new ItemStack(Material.BOW);
 		 ItemMeta batMeta = bat.getItemMeta();
-		 bat.setDurability((short)384);
+		 ((Damageable)batMeta).setDamage((short)384);
 		 batMeta.setUnbreakable(true);
 		 batMeta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE);
 		 List<String> lore = new ArrayList<String>();
@@ -193,7 +194,7 @@ public final class Util {
 		 return umpire;
 	 }
 	 public static ItemStack getBase(){
-		 ItemStack base = new ItemStack(Material.STEP,1,(short)7);
+		 ItemStack base = new ItemStack(Material.QUARTZ_SLAB);
 		 ItemMeta baseMeta = base.getItemMeta();
 		 List<String> lore = new ArrayList<String>();
 		 lore.add("SnowballGame Item");
@@ -221,7 +222,7 @@ public final class Util {
 		 ball.setAmount(4);
 		 NamespacedKey key = new NamespacedKey(plugin, plugin.getDescription().getName() + ball.getItemMeta().getDisplayName() + type);
 		 ShapedRecipe ballRecipe = new ShapedRecipe(key, ball);
-		 Material inclusion = Material.SNOW_BALL;
+		 Material inclusion = Material.SNOWBALL;
 		 switch(type){
 		 case "highest":
 			 inclusion = Material.ENDER_PEARL;
@@ -270,7 +271,7 @@ public final class Util {
 		 ItemStack base = getBase();
 		 NamespacedKey key = new NamespacedKey(plugin, plugin.getDescription().getName() + base.getItemMeta().getDisplayName());
 		 ShapelessRecipe baseRecipe = new ShapelessRecipe(key, base);
-		 baseRecipe.addIngredient(1, Material.STEP,7);
+		 baseRecipe.addIngredient(1, Material.QUARTZ_BLOCK);
 		 baseRecipe.addIngredient(1, Material.OBSERVER);
 		 return baseRecipe;
 	 }
