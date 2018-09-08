@@ -15,7 +15,7 @@ public class BallRollingTask extends BukkitRunnable {
     	if(ball.isDead() || time > 600){
     		this.cancel();
     	}
-    	if(ball.getVelocity().length() < 0.05 || !Util.doesRepel(ball.getLocation().add(0, -0.15 ,0).getBlock())){
+    	if(ball.getVelocity().length() < 0.05 || !Util.doesRepel(ball.getLocation().add(0, -0.15 ,0).getBlock()) || Util.doesRegardUp(ball.getLocation().add(0, -0.15 ,0).getBlock())){
     		ball.setGravity(true);
     		this.cancel();
     	}

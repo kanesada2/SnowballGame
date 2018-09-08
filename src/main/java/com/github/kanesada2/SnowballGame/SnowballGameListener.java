@@ -404,15 +404,15 @@ public class SnowballGameListener implements Listener {
 		Player runner = (Player)event.getEntity();
 		Player fielder = (Player)event.getDamager();
 		if(Util.isBall(fielder.getInventory().getItemInMainHand())){
-		event.setCancelled(true);
-		if(plugin.getConfig().getBoolean("Broadcast.Tag.Enabled")){
-			String msg = plugin.getConfig().getString("Broadcast.Tag.Message");
-			int range = plugin.getConfig().getInt("Broadcast.Tag.Range");
-			msg = msg.replaceAll("\\Q[[PLAYER]]\\E", fielder.getName().toString());
-			msg = msg.replaceAll("\\Q[[RUNNER]]\\E", runner.getName().toString());
-			msg = Util.addColors(msg);
-			Util.broadcastRange(fielder, msg, range);
-		}
+			event.setCancelled(true);
+			if(plugin.getConfig().getBoolean("Broadcast.Tag.Enabled")){
+				String msg = plugin.getConfig().getString("Broadcast.Tag.Message");
+				int range = plugin.getConfig().getInt("Broadcast.Tag.Range");
+				msg = msg.replaceAll("\\Q[[PLAYER]]\\E", fielder.getName().toString());
+				msg = msg.replaceAll("\\Q[[RUNNER]]\\E", runner.getName().toString());
+				msg = Util.addColors(msg);
+				Util.broadcastRange(fielder, msg, range);
+			}
 		}else if(Util.isBat(fielder.getInventory().getItemInMainHand())){
 			event.setCancelled(true);
 			fielder.sendMessage("OOPS! It is not allowed to slug with a bat more valuable thing than telephone in dugout.");
