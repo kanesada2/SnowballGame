@@ -416,6 +416,19 @@ public class SnowballGameListener implements Listener {
 		}else if(Util.isBat(fielder.getInventory().getItemInMainHand())){
 			event.setCancelled(true);
 			fielder.sendMessage("OOPS! It is not allowed to slug with a bat more valuable thing than telephone in dugout.");
+			String msg = plugin.getConfig().getString("Broadcast.Reach_Base.Message");
+			int range = plugin.getConfig().getInt("Broadcast.Reach_Base.Range");
+			Location loc = fielder.getLocation();
+			Collection<Entity>entities = loc.getWorld().getNearbyEntities(loc, 0.9, 1, 0.9);
+			for (Entity entity : entities) {
+				if(entity instanceof ArmorStand && Util.isUmpire(((ArmorStand)entity).getBoots()) && entity.getCustomName() != null){
+					msg = msg.replaceAll("\\Q[[BASE]]\\E", entity.getCustomName());
+					Util.broadcastRange(fielder, Util.addColors(msg), range);
+				}else if(entity instanceof ArmorStand && Util.isBase(((ArmorStand)entity).getBoots()) && entity.getCustomName() != null){
+					msg = msg.replaceAll("\\Q[[BASE]]\\E", entity.getCustomName());
+					Util.broadcastRange(fielder, Util.addColors(msg), range);
+				}
+			}
 		}
 	}
 	@EventHandler(priority = EventPriority.LOW)
