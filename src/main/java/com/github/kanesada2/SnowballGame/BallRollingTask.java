@@ -15,10 +15,11 @@ public class BallRollingTask extends BukkitRunnable {
     	if(ball.isDead() || time > 600){
     		this.cancel();
     	}
-    	if(ball.getVelocity().length() < 0.05 || !Util.doesRepel(ball.getLocation().add(0, -0.15 ,0).getBlock()) || Util.doesRegardUp(ball.getLocation().add(0, -0.15 ,0).getBlock())){
+    	if(ball.getVelocity().length() < 0.05 || !Util.doesRepel(ball.getLocation().add(0, -0.15 ,0).getBlock())){
     		ball.setGravity(true);
     		this.cancel();
     	}
+    	//TODO: 一段高いところから転がり始め、カーペット等の上に移った時の挙動
     	time++;
     	ball.getWorld().spawnParticle(Particle.SNOWBALL, ball.getLocation(), 1);
     	ball.setVelocity(ball.getVelocity().multiply(0.98));
