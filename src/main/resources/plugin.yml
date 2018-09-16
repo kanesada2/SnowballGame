@@ -22,3 +22,6 @@ permissions:
     Snowballgame.please:
       description: Allows you to get SnowballGame's items
       default: true
+    Snowballgame.sweep:
+      description: Allows you to clean up floating balls arround you
+      default: true

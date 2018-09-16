@@ -16,6 +16,7 @@ import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Snowball;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -41,6 +42,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 	            completions.add("reload");
 	            completions.add("get");
 	            completions.add("please");
+	            completions.add("sweep");
 			}else {
 	            if ("reload".startsWith(args[0])) {
 	                completions.add("reload");
@@ -48,6 +50,8 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 	            	completions.add("get");
 	            }else if ("please".startsWith(args[0])) {
 	            	completions.add("please");
+	            }else if ("sweep".startsWith(args[0])) {
+	            	completions.add("sweep");
 	            }
 	        }
 			break;
@@ -125,6 +129,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 				msgs[1] = "/sbg reload " + ChatColor.YELLOW + "reload SnowballGame's config file";
 				msgs[2] = "/sbg get [Ball|Bat|Glove] <Highest|Higher|Normal|Lower|Lowest>" + ChatColor.YELLOW + "get SnowballGame's custom item.";
 				msgs[3] = "/sbg please " + ChatColor.YELLOW + "Coach hit the ball for your fielding practice.";
+				msgs[4] = "/sbg sweep " + ChatColor.YELLOW + "clean up floationg balls arround you(in 3 blocks).";
 				sender.sendMessage(msgs);
 				return true;
 			case 1:
@@ -187,6 +192,29 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 					}
 					player.setMetadata("onMotion", new FixedMetadataValue(plugin, true));
 					new PlayerCoolDownTask(plugin, player).runTaskLater(plugin, plugin.getConfig().getInt("Ball.Cool_Time", 30));
+					return true;
+				}else if(args[0].equalsIgnoreCase("sweep")){
+					if(!(sender instanceof Player)){
+						sender.sendMessage("Please send this command in game.");
+						return false;
+					}else if(!sender.hasPermission("SnowballGame.sweep")){
+						sender.sendMessage("You don't have permisson.");
+						return false;
+					}
+					Player player = (Player)sender;
+					Collection <Entity> entities = player.getNearbyEntities(3, 3, 3);
+					int count = 0;
+					for (Entity entity : entities){
+						if(entity instanceof Snowball && !entity.hasGravity()){
+							entity.remove();
+							count++;
+						}
+					}
+					if(count == 0){
+						sender.sendMessage("No balls was found arround you.");
+						return false;
+					}
+					sender.sendMessage(count + " balls successfully cleaned up!");
 					return true;
 				}
 			case 2:

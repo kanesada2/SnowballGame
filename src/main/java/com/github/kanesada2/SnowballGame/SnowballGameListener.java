@@ -418,6 +418,7 @@ public class SnowballGameListener implements Listener {
 			fielder.sendMessage("OOPS! It is not allowed to slug with a bat more valuable thing than telephone in dugout.");
 			String msg = plugin.getConfig().getString("Broadcast.Reach_Base.Message");
 			int range = plugin.getConfig().getInt("Broadcast.Reach_Base.Range");
+			msg = msg.replaceAll("\\Q[[PLAYER]]\\E", fielder.getName().toString());
 			Location loc = fielder.getLocation();
 			Collection<Entity>entities = loc.getWorld().getNearbyEntities(loc, 0.9, 1, 0.9);
 			for (Entity entity : entities) {
