@@ -124,7 +124,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
         }
 		switch(args.length){
 			case 0:
-				String [] msgs = new String[4];
+				String [] msgs = new String[5];
 				msgs[0] = "/sbg " + ChatColor.YELLOW + "show all SnowballGame commands.";
 				msgs[1] = "/sbg reload " + ChatColor.YELLOW + "reload SnowballGame's config file";
 				msgs[2] = "/sbg get [Ball|Bat|Glove] <Highest|Higher|Normal|Lower|Lowest>" + ChatColor.YELLOW + "get SnowballGame's custom item.";
