@@ -130,9 +130,11 @@ public class SnowballGameAPI {
 				if(plugin.getConfig().getBoolean("Particle.BattedBall_InFlight.Enabled")){
 					tracker = Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_InFlight"));
 				}
-				Projectile hitball = SnowballGameAPI.launch(player, null, false, entity.getMetadata("ballType").get(0).asString(), "batted", velocity, spinVector.clone().multiply(0.01 * force), 0, 0, tracker, entity.getLocation(), new Vector(0,0,0));
-				PlayerHitBallEvent HitEvent = new PlayerHitBallEvent(player, hitball, (Projectile)entity, spinVector.clone().multiply(0.01 * force));
-				Bukkit.getPluginManager().callEvent(HitEvent);
+				PlayerHitBallEvent hit = new PlayerHitBallEvent(player, (Projectile)entity, spinVector.clone().multiply(0.01 * force), velocity, 0, 0, tracker);
+				Bukkit.getPluginManager().callEvent(hit);
+				Projectile hitball = SnowballGameAPI.launch(hit.getPlayer(), null, false, entity.getMetadata("ballType").get(0).asString(), "batted", hit.getVelocity(), hit.getSpinVector(), hit.getAcceleration(), hit.getRandom(), hit.getTracker(), entity.getLocation(), new Vector(0,0,0));
+				BallHitEvent ballHit = new BallHitEvent(hitball, (Projectile)entity);
+				Bukkit.getPluginManager().callEvent(ballHit);
 				return hitball;
 			}
 		}
