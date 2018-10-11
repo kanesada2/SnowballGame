@@ -1,5 +1,6 @@
 package com.github.kanesada2.SnowballGame;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -13,7 +14,6 @@ import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
-import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -49,6 +49,7 @@ import org.bukkit.projectiles.BlockProjectileSource;
 import org.bukkit.util.Vector;
 
 import com.github.kanesada2.SnowballGame.api.BallBounceEvent;
+import com.github.kanesada2.SnowballGame.api.BallHitEvent;
 import com.github.kanesada2.SnowballGame.api.PlayerCatchBallEvent;
 import com.github.kanesada2.SnowballGame.api.PlayerSwingBatEvent;
 import com.github.kanesada2.SnowballGame.api.PlayerThrowBallEvent;
@@ -599,12 +600,30 @@ public class SnowballGameListener implements Listener {
 		new PlayerCoolDownTask(plugin, player).runTaskLater(plugin, plugin.getConfig().getInt("Ball.Cool_Time", 30));
 	}
 	@EventHandler(priority = EventPriority.LOWEST)
+	public void onHit(BallHitEvent event){
+		Projectile ball = (Projectile)event.getEntity();
+		ball.setMetadata("hitLoc", new FixedMetadataValue(plugin,event.getBeforeHit().getLocation()));
+		ball.setMetadata("velocity", new FixedMetadataValue(plugin,ball.getVelocity().length() * 72));
+		double vAngle = ball.getVelocity().clone().setY(0).angle(ball.getVelocity()) * Math.signum(ball.getVelocity().getY()) * 57.2958;
+		ball.setMetadata("angle", new FixedMetadataValue(plugin,vAngle));
+	}
+	@EventHandler(priority = EventPriority.LOWEST)
 	public void onBounce(BallBounceEvent event){
-		if(plugin.getConfig().getBoolean("Particle.BattedBall_Ground.Enabled") && Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_Ground")) != null && event.isFirst()){
-			AreaEffectCloud cloud = (AreaEffectCloud)event.getBeforeBounce().getWorld().spawnEntity(event.getBeforeBounce().getLocation(), EntityType.AREA_EFFECT_CLOUD);
-			cloud.setParticle(Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_Ground")));
-			cloud.setDuration(plugin.getConfig().getInt("Particle.BattedBall_Ground.Time",200));
-			cloud.setRadius(1.5f);
+		if(event.isFirst()){
+			Projectile ball = event.getBeforeBounce();
+			String distance = String.format("%.2f",ball.getLocation().distance((Location)ball.getMetadata("hitLoc").get(0).value()));
+			String speed = String.format("%.2f",ball.getMetadata("velocity").get(0).asDouble());
+			String angle = String.format("%.2f",ball.getMetadata("angle").get(0).asDouble());
+			if(Float.valueOf(distance) > 20){
+				try {
+					plugin.statement.executeUpdate("INSERT INTO batted_balls VALUES (" + angle + "," +  speed + "," +  distance + ");");
+				} catch (SQLException e) {
+					// TODO 自動生成された catch ブロック
+					e.printStackTrace();
+				}
+
+			}
+			event.getEntity().remove();
 		}
 	}
 

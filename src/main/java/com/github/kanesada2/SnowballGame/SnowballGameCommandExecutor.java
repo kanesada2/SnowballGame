@@ -216,6 +216,9 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 					}
 					sender.sendMessage(count + " balls successfully cleaned up!");
 					return true;
+				}else if(args[0].equalsIgnoreCase("debug")){
+					new DebugTask(plugin, (Player)sender).runTaskTimer(plugin, 0, 5);
+					return true;
 				}
 			case 2:
 				if(!(sender instanceof Player)){
