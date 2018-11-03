@@ -374,11 +374,11 @@ public class SnowballGameListener implements Listener {
 			Location loc = player.getLocation();
 			if(plugin.getConfig().getBoolean("Glove.Enabled_Glove") && Util.isGlove(player.getInventory().getItemInOffHand()) && player.getInventory().getItemInMainHand().getType() == Material.AIR){
 				msg = plugin.getConfig().getString("Broadcast.Standing_Base.Message");
-				range = plugin.getConfig().getInt("Broadcast.Standing_Base.Range");
+				range = plugin.getConfig().getInt("Broadcast.Standing_Base.Range", 0);
 				entities = loc.getWorld().getNearbyEntities(loc, 2, 2, 2);
 			}else if(event.hasItem() && Util.isBat(event.getItem())){
 				msg = plugin.getConfig().getString("Broadcast.Reach_Base.Message");
-				range = plugin.getConfig().getInt("Broadcast.Reach_Base.Range");
+				range = plugin.getConfig().getInt("Broadcast.Reach_Base.Range", 0);
 				entities = loc.getWorld().getNearbyEntities(loc, 0.9, 1, 0.9);
 			}else{
 				return;
@@ -407,7 +407,7 @@ public class SnowballGameListener implements Listener {
 			event.setCancelled(true);
 			if(plugin.getConfig().getBoolean("Broadcast.Tag.Enabled")){
 				String msg = plugin.getConfig().getString("Broadcast.Tag.Message");
-				int range = plugin.getConfig().getInt("Broadcast.Tag.Range");
+				int range = plugin.getConfig().getInt("Broadcast.Tag.Range", 0);
 				msg = msg.replaceAll("\\Q[[PLAYER]]\\E", fielder.getName().toString());
 				msg = msg.replaceAll("\\Q[[RUNNER]]\\E", runner.getName().toString());
 				msg = Util.addColors(msg);
@@ -417,7 +417,7 @@ public class SnowballGameListener implements Listener {
 			event.setCancelled(true);
 			fielder.sendMessage("OOPS! It is not allowed to slug with a bat more valuable thing than telephone in dugout.");
 			String msg = plugin.getConfig().getString("Broadcast.Reach_Base.Message");
-			int range = plugin.getConfig().getInt("Broadcast.Reach_Base.Range");
+			int range = plugin.getConfig().getInt("Broadcast.Reach_Base.Range", 0);
 			msg = msg.replaceAll("\\Q[[PLAYER]]\\E", fielder.getName().toString());
 			Location loc = fielder.getLocation();
 			Collection<Entity>entities = loc.getWorld().getNearbyEntities(loc, 0.9, 1, 0.9);
@@ -524,7 +524,7 @@ public class SnowballGameListener implements Listener {
 		if(event.isSneaking() && Util.isBall(player.getInventory().getItemInMainHand())){
 			Location loc = player.getLocation();
 			String msg = plugin.getConfig().getString("Broadcast.Touch_Base.Message");
-			int range = plugin.getConfig().getInt("Broadcast.Touch_Base.Range");
+			int range = plugin.getConfig().getInt("Broadcast.Touch_Base.Range", 0);
 			msg = msg.replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString());
 			Collection <Entity> entities = loc.getWorld().getNearbyEntities(loc, 0.8, 0.5, 0.8);
 			for (Entity entity : entities) {
