@@ -123,16 +123,18 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
             return false;
         }
 		switch(args.length){
-			case 0:
-				String [] msgs = new String[4];
+			case 0: {
+				String [] msgs = new String[6];
 				msgs[0] = "/sbg " + ChatColor.YELLOW + "show all SnowballGame commands.";
 				msgs[1] = "/sbg reload " + ChatColor.YELLOW + "reload SnowballGame's config file";
 				msgs[2] = "/sbg get [Ball|Bat|Glove] <Highest|Higher|Normal|Lower|Lowest>" + ChatColor.YELLOW + "get SnowballGame's custom item.";
 				msgs[3] = "/sbg please " + ChatColor.YELLOW + "Coach hit the ball for your fielding practice.";
 				msgs[4] = "/sbg sweep " + ChatColor.YELLOW + "clean up floationg balls arround you(in 3 blocks).";
+				msgs[5] = "/sbg msg [on|off] " + ChatColor.YELLOW + "enable|disable SBG's nortification to you";
 				sender.sendMessage(msgs);
 				return true;
-			case 1:
+			}
+			case 1: {
 				if(args[0].equalsIgnoreCase("reload")){
 					if(sender instanceof Player){
 						if(!sender.hasPermission("SnowballGame.reload")){
@@ -217,90 +219,114 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 					sender.sendMessage(count + " balls successfully cleaned up!");
 					return true;
 				}
-			case 2:
-				if(!(sender instanceof Player)){
-					sender.sendMessage("Please send this command in game.");
-					return false;
+			break;
+			}
+			case 2: {
+				if(args[0].equalsIgnoreCase("msg")){
+					if(!(sender instanceof Player)){
+						sender.sendMessage("Please send this command in game.");
+						return false;
+					}
+					Player player = (Player) sender;
+					if (args[1].equalsIgnoreCase("off")) {
+						if(plugin.notifyDisabled.contains(player.getUniqueId())){
+							player.sendMessage("Your setting is already off.");
+							return false;
+						}
+						plugin.notifyDisabled.add(player.getUniqueId());
+						player.sendMessage("Disabled SBG's message to you.");
+						return true;
+					}else if (args[1].equalsIgnoreCase("on")) {
+						if(!plugin.notifyDisabled.contains(player.getUniqueId())){
+							player.sendMessage("Your setting is already on.");
+							return false;
+						}
+						plugin.notifyDisabled.remove(player.getUniqueId());
+						player.sendMessage("You can enjoy sounds of baseball again!");
+						return true;
+					}
+				}else if(args[0].equalsIgnoreCase("get")){
+					if(!(sender instanceof Player)){
+						sender.sendMessage("Please send this command in game.");
+						return false;
+					}
+					if(!sender.hasPermission("SnowballGame.get")){
+						sender.sendMessage("You don't have permisson.");
+						return false;
+					}
+					ItemStack item;
+					if(args[1].equalsIgnoreCase("Ball")){
+						item = Util.getBall("normal");
+					}else if(args[1].equalsIgnoreCase("Bat")){
+						item = Util.getBat();
+					}else if(args[1].equalsIgnoreCase("Glove")){
+						item = Util.getGlove();
+					}else if(args[1].equalsIgnoreCase("Umpire")){
+						item = Util.getUmpire();
+					}else if(args[1].equalsIgnoreCase("Coach")){
+						item = Util.getCoach();
+					}else if(args[1].equalsIgnoreCase("Base")){
+						item = Util.getBase();
+					}else{
+						sender.sendMessage("SnowballGame can't provide such a item.");
+						return false;
+					}
+					Player player = (Player)sender;
+					Inventory inventory = player.getInventory();
+					if(inventory.containsAtLeast(item,1) || inventory.firstEmpty() != -1){
+						inventory.addItem(item);
+					}else{
+						player.getWorld().dropItem(player.getLocation(), item);
+					}
+					sender.sendMessage("You got a SnowballGame's item!");
+					return true;
 				}
-				if(!args[0].equalsIgnoreCase("get")){
-					sender.sendMessage("Unknown command. Please check /sbg");
-					return false;
+			break;
+			}
+			case 3: {
+				if(args[0].equalsIgnoreCase("get")){
+					if(!(sender instanceof Player)){
+						sender.sendMessage("Please send this command in game.");
+						return false;
+					}
+
+					if(!args[1].equalsIgnoreCase("ball")){
+						sender.sendMessage("You can't choice the type of such a item.");
+						return false;
+					}
+					if(!sender.hasPermission("SnowballGame.get")){
+						sender.sendMessage("You don't have permisson.");
+						return false;
+					}
+					ItemStack ball;
+					if(args[2].equalsIgnoreCase("Highest")){
+						ball = Util.getBall("highest");
+					}else if(args[2].equalsIgnoreCase("Higher")){
+						ball = Util.getBall("higher");
+					}else if(args[2].equalsIgnoreCase("Normal")){
+						ball = Util.getBall("normal");
+					}else if(args[2].equalsIgnoreCase("Lower")){
+						ball = Util.getBall("lower");
+					}else if(args[2].equalsIgnoreCase("Lowest")){
+						ball = Util.getBall("lowest");
+					}else{
+						sender.sendMessage("SnowballGame can't provide such a item.");
+						return false;
+					}
+					Player player = (Player)sender;
+					Inventory inv = player.getInventory();
+					if(inv.containsAtLeast(ball,1) || inv.firstEmpty() != -1){
+						inv.addItem(ball);
+					}else{
+						player.getWorld().dropItem(player.getLocation(), ball);
+					}
+					sender.sendMessage("You got a SnowballGame's item!");
+					return true;
 				}
-				if(!sender.hasPermission("SnowballGame.get")){
-					sender.sendMessage("You don't have permisson.");
-					return false;
-				}
-				ItemStack item;
-				if(args[1].equalsIgnoreCase("Ball")){
-					item = Util.getBall("normal");
-				}else if(args[1].equalsIgnoreCase("Bat")){
-					item = Util.getBat();
-				}else if(args[1].equalsIgnoreCase("Glove")){
-					item = Util.getGlove();
-				}else if(args[1].equalsIgnoreCase("Umpire")){
-					item = Util.getUmpire();
-				}else if(args[1].equalsIgnoreCase("Coach")){
-					item = Util.getCoach();
-				}else if(args[1].equalsIgnoreCase("Base")){
-					item = Util.getBase();
-				}else{
-					sender.sendMessage("SnowballGame can't provide such a item.");
-					return false;
-				}
-				Player player = (Player)sender;
-				Inventory inventory = player.getInventory();
-				if(inventory.containsAtLeast(item,1) || inventory.firstEmpty() != -1){
-					inventory.addItem(item);
-				}else{
-					player.getWorld().dropItem(player.getLocation(), item);
-				}
-				sender.sendMessage("You got a SnowballGame's item!");
-				return true;
-			case 3:
-				if(!(sender instanceof Player)){
-					sender.sendMessage("Please send this command in game.");
-					return false;
-				}
-				if(!args[0].equalsIgnoreCase("get")){
-					sender.sendMessage("Unknown command. Please check /sbg");
-					return false;
-				}
-				if(!args[1].equalsIgnoreCase("ball")){
-					sender.sendMessage("You can't choice the type of such a item.");
-					return false;
-				}
-				if(!sender.hasPermission("SnowballGame.get")){
-					sender.sendMessage("You don't have permisson.");
-					return false;
-				}
-				ItemStack ball;
-				if(args[2].equalsIgnoreCase("Highest")){
-					ball = Util.getBall("highest");
-				}else if(args[2].equalsIgnoreCase("Higher")){
-					ball = Util.getBall("higher");
-				}else if(args[2].equalsIgnoreCase("Normal")){
-					ball = Util.getBall("normal");
-				}else if(args[2].equalsIgnoreCase("Lower")){
-					ball = Util.getBall("lower");
-				}else if(args[2].equalsIgnoreCase("Lowest")){
-					ball = Util.getBall("lowest");
-				}else{
-					sender.sendMessage("SnowballGame can't provide such a item.");
-					return false;
-				}
-				Player pler = (Player)sender;
-				Inventory inv = pler.getInventory();
-				if(inv.containsAtLeast(ball,1) || inv.firstEmpty() != -1){
-					inv.addItem(ball);
-				}else{
-					pler.getWorld().dropItem(pler.getLocation(), ball);
-				}
-				sender.sendMessage("You got a SnowballGame's item!");
-				return true;
-			default:
-				sender.sendMessage("Unknown command. Please check /sbg");
-				return false;
+			}
 		}
+		sender.sendMessage("Unknown command. Please check /sbg");
+		return false;
 	}
 
 }

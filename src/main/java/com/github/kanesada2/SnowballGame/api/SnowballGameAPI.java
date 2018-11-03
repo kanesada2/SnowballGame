@@ -81,7 +81,7 @@ public class SnowballGameAPI {
 		int brRange;
 		if(force < 0.4 && plugin.getConfig().getBoolean("Broadcast.Bunt.Enabled")){
 			msg = plugin.getConfig().getString("Broadcast.Bunt.Message");
-			brRange = plugin.getConfig().getInt("Broadcast.Bunt.Range");
+			brRange = plugin.getConfig().getInt("Broadcast.Bunt.Range", 0);
 			msg = msg.replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString());
 			msg = Util.addColors(msg);
 			Util.broadcastRange(player, msg, brRange);
@@ -130,9 +130,11 @@ public class SnowballGameAPI {
 				if(plugin.getConfig().getBoolean("Particle.BattedBall_InFlight.Enabled")){
 					tracker = Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.BattedBall_InFlight"));
 				}
-				Projectile hitball = SnowballGameAPI.launch(player, null, false, entity.getMetadata("ballType").get(0).asString(), "batted", velocity, spinVector.clone().multiply(0.01 * force), 0, 0, tracker, entity.getLocation(), new Vector(0,0,0));
-				PlayerHitBallEvent HitEvent = new PlayerHitBallEvent(player, hitball, (Projectile)entity, spinVector.clone().multiply(0.01 * force));
-				Bukkit.getPluginManager().callEvent(HitEvent);
+				PlayerHitBallEvent hit = new PlayerHitBallEvent(player, (Projectile)entity, spinVector.clone().multiply(0.01 * force), velocity, 0, 0, tracker);
+				Bukkit.getPluginManager().callEvent(hit);
+				Projectile hitball = SnowballGameAPI.launch(hit.getPlayer(), null, false, entity.getMetadata("ballType").get(0).asString(), "batted", hit.getVelocity(), hit.getSpinVector(), hit.getAcceleration(), hit.getRandom(), hit.getTracker(), entity.getLocation(), new Vector(0,0,0));
+				BallHitEvent ballHit = new BallHitEvent(hitball, (Projectile)entity);
+				Bukkit.getPluginManager().callEvent(ballHit);
 				return hitball;
 			}
 		}
@@ -156,7 +158,7 @@ public class SnowballGameAPI {
 								player.sendMessage("Catched!");
 							}
 							if(plugin.getConfig().getBoolean("Broadcast.Catch.Enabled") && catchEvent.isDirect()){
-								Util.broadcastRange(player, Util.addColors(plugin.getConfig().getString("Broadcast.Catch.Message").replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString())), plugin.getConfig().getInt("Broadcast.Catch.Range"));
+								Util.broadcastRange(player, Util.addColors(plugin.getConfig().getString("Broadcast.Catch.Message").replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString())), plugin.getConfig().getInt("Broadcast.Catch.Range", 0));
 							}
 							if(plugin.getConfig().getBoolean("Particle.Catch_Ball.Enabled") && Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Catch_Ball")) != null){
 								player.getWorld().spawnParticle(Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Catch_Ball")), player.getLocation(), 5, 0.5, 0.5, 0.5);

@@ -51,7 +51,7 @@ public class BallJudgeTask extends BukkitRunnable {
 	    			this.cancel();
 		    		break;
 	    		}
-	    		Util.broadcastRange(ball, msg, plugin.getConfig().getInt("Broadcast.Strike.Range"));
+	    		Util.broadcastRange(event.getBall(), event.getMsg(), plugin.getConfig().getInt("Broadcast.Strike.Range"));
 	    		this.cancel();
 	    		break;
 	    	}
