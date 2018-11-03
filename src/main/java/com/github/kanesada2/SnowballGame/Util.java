@@ -74,14 +74,15 @@ public final class Util {
 		 range *= range;
 	     Location location = sender.getLocation();
 	     List<Player> players = sender.getWorld().getPlayers();
-	     for (Player player : players) {
-	    	 if(!plugin.notifyDisabled.contains(player.getUniqueId())){
+	     List<Player> recievers = new ArrayList<Player>();
+	     for(Player player : players){
+	    	 if(plugin.notifyDisabled.contains(player.getUniqueId())){
 	       		continue;
 	       	 }
-	       	 players.remove(player);
+	       	 recievers.add(player);
 	     }
-	     for (Player player : players) {
-	       	if(range <= 0 ||location.distanceSquared(player.getLocation()) > range){
+	     for(Player player : recievers){
+	       	if(range > 0 && location.distanceSquared(player.getLocation()) > range){
 	       		continue;
 	       	}
 	         player.sendMessage(msg);

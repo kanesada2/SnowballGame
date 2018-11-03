@@ -81,7 +81,7 @@ public class SnowballGameAPI {
 		int brRange;
 		if(force < 0.4 && plugin.getConfig().getBoolean("Broadcast.Bunt.Enabled")){
 			msg = plugin.getConfig().getString("Broadcast.Bunt.Message");
-			brRange = plugin.getConfig().getInt("Broadcast.Bunt.Range");
+			brRange = plugin.getConfig().getInt("Broadcast.Bunt.Range", 0);
 			msg = msg.replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString());
 			msg = Util.addColors(msg);
 			Util.broadcastRange(player, msg, brRange);
@@ -158,7 +158,7 @@ public class SnowballGameAPI {
 								player.sendMessage("Catched!");
 							}
 							if(plugin.getConfig().getBoolean("Broadcast.Catch.Enabled") && catchEvent.isDirect()){
-								Util.broadcastRange(player, Util.addColors(plugin.getConfig().getString("Broadcast.Catch.Message").replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString())), plugin.getConfig().getInt("Broadcast.Catch.Range"));
+								Util.broadcastRange(player, Util.addColors(plugin.getConfig().getString("Broadcast.Catch.Message").replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString())), plugin.getConfig().getInt("Broadcast.Catch.Range", 0));
 							}
 							if(plugin.getConfig().getBoolean("Particle.Catch_Ball.Enabled") && Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Catch_Ball")) != null){
 								player.getWorld().spawnParticle(Util.getParticle(plugin.getConfig().getConfigurationSection("Particle.Catch_Ball")), player.getLocation(), 5, 0.5, 0.5, 0.5);
