@@ -554,7 +554,7 @@ public class SnowballGameListener implements Listener {
 		Player player = event.getPlayer();
 		Location loc = player.getLocation();
 		String msg = plugin.getConfig().getString("Broadcast.Touch_Base.Message");
-		int range = plugin.getConfig().getInt("Broadcast.Touch_Base.Range");
+		int range = plugin.getConfig().getInt("Broadcast.Touch_Base.Range", 0);
 		msg = msg.replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString());
 		Collection <Entity> entities = loc.getWorld().getNearbyEntities(loc, 0.8, 0.5, 0.8);
 		for (Entity entity : entities) {

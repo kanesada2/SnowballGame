@@ -71,18 +71,21 @@ public final class Util {
 	        return input;
 	 }
 	 public static void broadcastRange(Entity sender, String msg, int range){
-		 if(range > 0){
-			 range *= range;
-	         Location location = sender.getLocation();
-	         List<Player> players = sender.getWorld().getPlayers();
-	         	for (Player player : players) {
-	         		if (location.distanceSquared(player.getLocation()) <= range) {
-	         			player.sendMessage(msg);
-	                }
-	            }
-		}else{
-			plugin.getServer().broadcastMessage(msg);
-		}
+		 range *= range;
+	     Location location = sender.getLocation();
+	     List<Player> players = sender.getWorld().getPlayers();
+	     for (Player player : players) {
+	    	 if(!plugin.notifyDisabled.contains(player.getUniqueId())){
+	       		continue;
+	       	 }
+	       	 players.remove(player);
+	     }
+	     for (Player player : players) {
+	       	if(range <= 0 ||location.distanceSquared(player.getLocation()) > range){
+	       		continue;
+	       	}
+	         player.sendMessage(msg);
+	     }
 	 }
 	 public static boolean doesRegardUp(Block block){
 		 HashSet <Material> excluded = Data.regardUpList();
@@ -270,7 +273,7 @@ public final class Util {
 		 ItemStack base = getBase();
 		 NamespacedKey key = new NamespacedKey(plugin, plugin.getDescription().getName() + base.getItemMeta().getDisplayName());
 		 ShapelessRecipe baseRecipe = new ShapelessRecipe(key, base);
-		 baseRecipe.addIngredient(1, Material.QUARTZ_BLOCK);
+		 baseRecipe.addIngredient(1, Material.STEP,7);
 		 baseRecipe.addIngredient(1, Material.OBSERVER);
 		 return baseRecipe;
 	 }
