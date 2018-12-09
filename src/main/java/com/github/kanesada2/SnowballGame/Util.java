@@ -14,6 +14,7 @@ import org.bukkit.Particle;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -128,6 +129,19 @@ public final class Util {
 	 public static boolean isCoach(ItemStack item){
 		 return isMyItem(item) && item.getType() == Material.ARMOR_STAND;
 	 }
+
+	 public static boolean isEntityCoach(Entity entity){
+		 return entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Coach.Coach_Name", "Coach"));
+	 }
+
+	 public static boolean isUmpireMarker(Entity entity){
+		return entity instanceof ArmorStand && isUmpire(((ArmorStand)entity).getBoots()) && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Umpire.Umpire_Name", "Umpire"));
+	 }
+
+	 public static boolean isBaseMarker(Entity entity){
+		return entity instanceof ArmorStand && isBase(((ArmorStand)entity).getBoots()) && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Base.Base_Name", "Base"));
+	 }
+
 	 public static ItemStack getBall(String type){
 		 ItemStack ball = new ItemStack(Material.SNOWBALL);
 		 ItemMeta ballMeta = ball.getItemMeta();

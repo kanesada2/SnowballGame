@@ -15,6 +15,7 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.Inventory;
@@ -180,7 +181,7 @@ public class SnowballGameAPI {
 		}
 		return false;
 	}
-	public static Projectile playWithCoach(Player player, ArmorStand coach, String ballType){
+	public static Projectile playWithCoach(Player player, LivingEntity coach, String ballType){
 		Vector knockedVec = player.getLocation().toVector().subtract(coach.getLocation().toVector()).normalize();
 		double distance = Math.sqrt(player.getLocation().distanceSquared(coach.getLocation()));
 		double randomY = (Math.random() - Math.random()) * (distance / 30);
@@ -400,6 +401,30 @@ public class SnowballGameAPI {
 		values.put("acceleration",acceleration);
 		values.put("random", random);
 		values.put("tracker", tracker);
+		return values;
+	}
+
+	public static HashMap<String, Vector> getModifiersFromGloveName(String name, Location eye, boolean hasGloveOnLeft){
+		int moved;
+		if(hasGloveOnLeft){
+			moved = 1;
+		}else{
+			moved = -1;
+		}
+		eye.setYaw(eye.getYaw() + 90);
+		Vector rpModifier = eye.getDirection().normalize().multiply(0.2 * moved);
+		Vector vlModifier = rpModifier.clone().multiply(-0.1);
+		if(plugin.getConfig().getStringList("Glove.Custom.Type").contains(name)){
+			String section = "Glove.Custom." + name;
+			rpModifier.setY(plugin.getConfig().getDouble(section + ".Vertical"));
+			rpModifier.add(eye.getDirection().normalize().multiply(plugin.getConfig().getDouble(section + ".Horizontal", 0) * moved));
+			vlModifier = rpModifier.clone().multiply(-0.1);
+			eye.setYaw(eye.getYaw() - 90);
+			rpModifier.add(eye.getDirection().normalize().multiply(plugin.getConfig().getDouble(section + ".Closeness", 0)));
+		}
+		HashMap<String,Vector> values = new HashMap<String,Vector>();
+		values.put("rp", rpModifier);
+		values.put("velocity", vlModifier);
 		return values;
 	}
 }
