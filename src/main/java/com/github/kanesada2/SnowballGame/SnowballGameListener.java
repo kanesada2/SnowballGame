@@ -1,6 +1,5 @@
 package com.github.kanesada2.SnowballGame;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +33,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.ProjectileHitEvent;
 import org.bukkit.event.entity.ProjectileLaunchEvent;
+import org.bukkit.event.player.PlayerArmorStandManipulateEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
@@ -94,29 +94,17 @@ public class SnowballGameListener implements Listener {
 				}
 			}
 			if(Util.isBall(hand)){
-				int moved;
-				if(isR){
-					moved = 1;
-				}else{
-					moved = -1;
-				}
-				Location direction = player.getLocation().clone();
-				direction.setYaw(direction.getYaw() + 90);
-				Vector rpModifier = direction.getDirection().normalize().multiply(0.2 * moved);
-				Vector vlModifier = rpModifier.clone().multiply(-0.1);
+				String gloveName = "";
 				if(Util.isGlove(player.getInventory().getItemInOffHand())){
 					ItemMeta glove = player.getInventory().getItemInOffHand().getItemMeta();
 					if(glove.hasDisplayName()){
-						if(plugin.getConfig().getStringList("Glove.Custom.Type").contains(glove.getDisplayName())){
-							String section = "Glove.Custom." + glove.getDisplayName();
-							rpModifier.setY(plugin.getConfig().getDouble(section + ".Vertical"));
-							rpModifier.add(direction.getDirection().normalize().multiply(plugin.getConfig().getDouble(section + ".Horizontal", 0) * moved));
-							vlModifier = rpModifier.clone().multiply(-0.1);
-							direction.setYaw(direction.getYaw() - 90);
-							rpModifier.add(direction.getDirection().normalize().multiply(plugin.getConfig().getDouble(section + ".Closeness", 0)));
-						}
+						gloveName = glove.getDisplayName();
 					}
 				}
+				HashMap<String,Vector> modifiers = SnowballGameAPI.getModifiersFromGloveName(gloveName, player.getEyeLocation(), isR);
+				Vector rpModifier = modifiers.get("rp");
+				Vector vlModifier = modifiers.get("velocity");
+
 				Projectile old = projectile;
 				event.setCancelled(true);
 				Location location = old.getLocation().add(rpModifier);
@@ -135,14 +123,14 @@ public class SnowballGameListener implements Listener {
 					random = (double)values.get("random");
 					tracker = (Particle)values.get("tracker");
 				}
-				PlayerThrowBallEvent throwEvent = new PlayerThrowBallEvent(player, hand, projectile.getVelocity(), spinVector, acceleration, random, tracker, location, vModifier);
+				Vector velocity = old.getVelocity().add(vlModifier).add(player.getVelocity());
+				PlayerThrowBallEvent throwEvent = new PlayerThrowBallEvent(player, hand, velocity, spinVector, acceleration, random, tracker, location, vModifier);
 				Bukkit.getPluginManager().callEvent(throwEvent);
 				if(throwEvent.isCancelled()){
 					return;
 				}
-				Projectile ball = SnowballGameAPI.launch(throwEvent.getPlayer(), throwEvent.getItemBall(), true, throwEvent.getBallType(), throwEvent.getBallName(), throwEvent.getVelocity(), throwEvent.getSpinVector(), throwEvent.getAcceleration(), throwEvent.getRandom(), throwEvent.getTracker(), throwEvent.getRPoint(), throwEvent.getVModifier());
+				SnowballGameAPI.launch(throwEvent.getPlayer(), throwEvent.getItemBall(), true, throwEvent.getBallType(), throwEvent.getBallName(), throwEvent.getVelocity(), throwEvent.getSpinVector(), throwEvent.getAcceleration(), throwEvent.getRandom(), throwEvent.getTracker(), throwEvent.getRPoint(), throwEvent.getVModifier());
 				player.getWorld().playSound(location, Sound.ENTITY_SNOWBALL_THROW , 1, 0);
-				ball.setVelocity(ball.getVelocity().add(vlModifier).add(player.getVelocity()));
 			}
 		}else if(projectile.getShooter() instanceof BlockProjectileSource){
 			BlockProjectileSource source = (BlockProjectileSource)projectile.getShooter();
@@ -229,27 +217,9 @@ public class SnowballGameListener implements Listener {
 				}else{
 					return;
 				}
-			 }else if(event.getHitEntity() instanceof ArmorStand && event.getHitEntity().getCustomName() != null && event.getHitEntity().getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Coach.Coach_Name"))){
-				 if(projectile.getShooter() instanceof BlockProjectileSource){
-					 Location loc = event.getHitEntity().getLocation();
-					 List<Player> players = loc.getWorld().getPlayers();
-					 int range = plugin.getConfig().getInt("Coach.Coach_Range",120);
-					 range *= range;
-					 List<Player> fielders = new ArrayList<Player>();
-					 for (Player player : players) {
-			         	if (loc.distanceSquared(player.getLocation()) <= range && Util.isGlove(player.getInventory().getItemInOffHand())) {
-			         		fielders.add(player);
-			            }
-			         }
-					 if(fielders.size() > 0){
-						 Player fielder = fielders.get((int) Math.floor(Math.random() * fielders.size()));
-						 SnowballGameAPI.playWithCoach(fielder, (ArmorStand)event.getHitEntity(), projectile.getMetadata("ballType").get(0).asString());
-						 return;
-					 }
-				 }else if(projectile.getShooter() instanceof Player){
-					 SnowballGameAPI.playWithCoach((Player)projectile.getShooter(), (ArmorStand)event.getHitEntity(), projectile.getMetadata("ballType").get(0).asString());
-					 return;
-				 }
+			 }else if(Util.isEntityCoach(event.getHitEntity())){
+				 new CoachAction(plugin, (ArmorStand)event.getHitEntity()).ballHitAction(projectile);
+				 return;
 			 }
 			 projectile.getWorld().dropItem(projectile.getLocation(), ball);
 			} else {
@@ -345,25 +315,27 @@ public class SnowballGameListener implements Listener {
 				return;
 			}
 			hand.setAmount(hand.getAmount() - 1);
-		}else if(event.hasItem() && Util.isCoach(event.getItem())){
-			player.setMetadata("coachsetter", new FixedMetadataValue(plugin, true));
 		}else if(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK){
-			if(player.hasMetadata("catchTried")){
-				return;
+			if(event.hasItem() && Util.isCoach(event.getItem())){
+				player.setMetadata("coachsetter", new FixedMetadataValue(plugin, true));
+			}else{
+				if(player.hasMetadata("catchTried")){
+					return;
+				}
+				if(!(plugin.getConfig().getBoolean("Glove.Enabled_Glove") && Util.isGlove(player.getInventory().getItemInOffHand()) && player.getInventory().getItemInMainHand().getType() == Material.AIR)){
+					return;
+				}
+				event.setCancelled(SnowballGameAPI.tryCatch(player, player.getEyeLocation(), new Vector(3, 4, 3), 8));
+				player.setMetadata("catchTried", new FixedMetadataValue(plugin,true));
+				plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable()
+			      {
+			        @Override
+			        public void run()
+			        {
+			        	player.removeMetadata("catchTried", plugin);
+			        }
+			      }, (4L));
 			}
-			if(!(plugin.getConfig().getBoolean("Glove.Enabled_Glove") && Util.isGlove(player.getInventory().getItemInOffHand()) && player.getInventory().getItemInMainHand().getType() == Material.AIR)){
-				return;
-			}
-			event.setCancelled(SnowballGameAPI.tryCatch(player, player.getEyeLocation(), new Vector(3, 4, 3), 8));
-			player.setMetadata("catchTried", new FixedMetadataValue(plugin,true));
-			plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable()
-		      {
-		        @Override
-		        public void run()
-		        {
-		        	player.removeMetadata("catchTried", plugin);
-		        }
-		      }, (4L));
 		}else if(event.getAction() == Action.LEFT_CLICK_BLOCK){
 			if(!(event.getClickedBlock().getDrops().contains(new ItemStack(Material.STEP,1,(short)7)) || event.getClickedBlock().getType() == Material.QUARTZ_BLOCK)){
 				return;
@@ -474,63 +446,93 @@ public class SnowballGameListener implements Listener {
 		Location loc = event.getBlock().getLocation();
 		Collection <Entity> entities = loc.getWorld().getNearbyEntities(loc, 2, 2, 2);
 		for (Entity entity : entities) {
-			if(entity instanceof ArmorStand && Util.isUmpire(((ArmorStand)entity).getBoots()) || entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Umpire.Umpire_Name", "Base"))){
-				entity.remove();
-				loc.getWorld().getBlockAt(loc).setType(Material.AIR);
+			if(Util.isUmpireMarker(entity)){
 				loc.getWorld().dropItemNaturally(loc, Util.getUmpire());
-			}else if(entity instanceof ArmorStand && Util.isBase(((ArmorStand)entity).getBoots()) || entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Base.Base_Name", "Umpire"))){
 				entity.remove();
-				loc.getWorld().getBlockAt(loc).setType(Material.AIR);
+			}else if(Util.isBaseMarker(entity)){
 				loc.getWorld().dropItemNaturally(loc, Util.getBase());
+				entity.remove();
 			}
+
+			loc.getWorld().getBlockAt(loc).setType(Material.AIR);
 		}
 	}
 	@EventHandler(priority = EventPriority.LOW)
-	public void onKnockerSpawned(CreatureSpawnEvent event){
+	public void onCoachSpawned(CreatureSpawnEvent event){
 		if(!(event.getEntity() instanceof ArmorStand)){
 			return;
 		}
 		Collection <Entity> entities = event.getEntity().getNearbyEntities(5, 5, 5);
 		for(Entity entity: entities){
 			if(entity.hasMetadata("coachsetter")){
-				ArmorStand knocker = (ArmorStand)event.getEntity();
-				knocker.setCustomName(plugin.getConfig().getString("Coach.Coach_Name"));
-				knocker.setCustomNameVisible(true);
-				knocker.setArms(true);
-				knocker.setGlowing(true);
-				knocker.getEquipment().setHelmet(new ItemStack(Material.SKULL_ITEM, 1, (short)4));
-				knocker.getEquipment().setChestplate(new ItemStack(Material.LEATHER_CHESTPLATE));
-				knocker.getEquipment().setLeggings(new ItemStack(Material.LEATHER_LEGGINGS));
-				knocker.getEquipment().setBoots(new ItemStack(Material.LEATHER_BOOTS));
-				knocker.getEquipment().setItemInMainHand(Util.getBat());
+				new CoachAction(plugin, (ArmorStand)event.getEntity()).init();
 				entity.removeMetadata("coachsetter", plugin);
+				break;
 			}
 		}
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void onKnockerDamaged(EntityDamageEvent event){
-		if(event.getEntity() instanceof ArmorStand && event.getEntity().getCustomName() != null && event.getEntity().getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Coach.Coach_Name"))){
+		if(Util.isEntityCoach(event.getEntity())){
 			if(event.getCause() == DamageCause.ENTITY_ATTACK){
-				event.getEntity().getWorld().dropItem(event.getEntity().getLocation(), Util.getCoach());
-				event.getEntity().remove();
+				ArmorStand coach = (ArmorStand)event.getEntity();
+				new CoachAction(plugin, coach).drop();
+				coach.remove();
 			}else{
 				event.setCancelled(true);
 			}
 		}
+	}
+
+	@EventHandler(priority = EventPriority.LOW)
+	public void onKnockerManipulated(PlayerArmorStandManipulateEvent event){
+		if(!Util.isEntityCoach(event.getRightClicked())){
+			return;
+		}
+		ArmorStand coach = (ArmorStand)event.getRightClicked();
+		List<ItemStack> defs = new CoachAction(plugin, coach).getDefaultEquips();
+		ItemStack newItem = event.getPlayerItem();
+		if(!defs.contains(event.getArmorStandItem())){
+			return;
+		}
+		event.setCancelled(true);
+		switch(event.getSlot()){
+			case HAND :
+				coach.getEquipment().setItemInMainHand(newItem);
+				break;
+			case OFF_HAND :
+				coach.getEquipment().setItemInOffHand(newItem);
+				break;
+			case HEAD :
+				coach.setHelmet(newItem);
+				break;
+			case CHEST :
+				coach.setChestplate(newItem);
+				break;
+			case FEET :
+				coach.setBoots(newItem);
+				break;
+			case LEGS :
+				coach.setLeggings(newItem);
+				break;
+		}
+		Player player = event.getPlayer();
+		if(player.getGameMode() != GameMode.CREATIVE && !defs.contains(newItem)){
+			event.getPlayer().getInventory().setItemInMainHand(new ItemStack(Material.AIR));
+		}
+
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void onSlide(PlayerToggleSneakEvent event){
 		Player player = event.getPlayer();
 		if(event.isSneaking() && Util.isBall(player.getInventory().getItemInMainHand())){
 			Location loc = player.getLocation();
-			String msg = plugin.getConfig().getString("Broadcast.Touch_Base.Message");
-			int range = plugin.getConfig().getInt("Broadcast.Touch_Base.Range", 0);
-			msg = msg.replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString());
 			Collection <Entity> entities = loc.getWorld().getNearbyEntities(loc, 0.8, 0.5, 0.8);
 			for (Entity entity : entities) {
-				if(entity instanceof ArmorStand && Util.isUmpire(((ArmorStand)entity).getBoots()) && entity.getCustomName() != null){
-					Util.broadcastRange(player, Util.addColors(msg).replaceAll("\\Q[[BASE]]\\E", entity.getCustomName()), range);
-				}else if(entity instanceof ArmorStand && Util.isBase(((ArmorStand)entity).getBoots()) && entity.getCustomName() != null){
+				if(Util.isUmpireMarker(entity) || Util.isBaseMarker(entity)){
+					String msg = plugin.getConfig().getString("Broadcast.Touch_Base.Message");
+					int range = plugin.getConfig().getInt("Broadcast.Touch_Base.Range", 0);
+					msg = msg.replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString());
 					Util.broadcastRange(player, Util.addColors(msg).replaceAll("\\Q[[BASE]]\\E", entity.getCustomName()), range);
 				}
 			}
@@ -553,14 +555,12 @@ public class SnowballGameListener implements Listener {
 	public void onCatch(PlayerCatchBallEvent event){
 		Player player = event.getPlayer();
 		Location loc = player.getLocation();
-		String msg = plugin.getConfig().getString("Broadcast.Touch_Base.Message");
-		int range = plugin.getConfig().getInt("Broadcast.Touch_Base.Range", 0);
-		msg = msg.replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString());
 		Collection <Entity> entities = loc.getWorld().getNearbyEntities(loc, 0.8, 0.5, 0.8);
 		for (Entity entity : entities) {
-			if(entity instanceof ArmorStand && Util.isUmpire(((ArmorStand)entity).getBoots()) && entity.getCustomName() != null){
-				Util.broadcastRange(player, Util.addColors(msg).replaceAll("\\Q[[BASE]]\\E", entity.getCustomName()), range);
-			}else if(entity instanceof ArmorStand && Util.isBase(((ArmorStand)entity).getBoots()) && entity.getCustomName() != null){
+			if(Util.isUmpireMarker(entity) || Util.isBaseMarker(entity)){
+				String msg = plugin.getConfig().getString("Broadcast.Touch_Base.Message");
+				int range = plugin.getConfig().getInt("Broadcast.Touch_Base.Range", 0);
+				msg = msg.replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString());
 				Util.broadcastRange(player, Util.addColors(msg).replaceAll("\\Q[[BASE]]\\E", entity.getCustomName()), range);
 			}
 		}

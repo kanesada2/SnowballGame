@@ -62,7 +62,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 					completions.add("Bat");
 		            completions.add("Glove");
 		            completions.add("Umpire");
-		            completions.add("Coach");
+		            completions.add("CoachManager");
 		            completions.add("Base");
 				}else {
 		            if("Ball".startsWith(args[1])){
@@ -77,8 +77,8 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 		            if("Umpire".startsWith(args[1])){
 		            	completions.add("Umpire");
 		            }
-		            if("Coach".startsWith(args[1])){
-		            	completions.add("Coach");
+		            if("CoachManager".startsWith(args[1])){
+		            	completions.add("CoachManager");
 		            }
 		            if("Ball".startsWith(args[1])){
 		            	completions.add("Base");
@@ -128,7 +128,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 				msgs[0] = "/sbg " + ChatColor.YELLOW + "show all SnowballGame commands.";
 				msgs[1] = "/sbg reload " + ChatColor.YELLOW + "reload SnowballGame's config file";
 				msgs[2] = "/sbg get [Ball|Bat|Glove] <Highest|Higher|Normal|Lower|Lowest>" + ChatColor.YELLOW + "get SnowballGame's custom item.";
-				msgs[3] = "/sbg please " + ChatColor.YELLOW + "Coach hit the ball for your fielding practice.";
+				msgs[3] = "/sbg please " + ChatColor.YELLOW + "CoachManager hit the ball for your fielding practice.";
 				msgs[4] = "/sbg sweep " + ChatColor.YELLOW + "clean up floationg balls arround you(in 3 blocks).";
 				msgs[5] = "/sbg msg [on|off] " + ChatColor.YELLOW + "enable|disable SBG's nortification to you";
 				sender.sendMessage(msgs);
@@ -176,7 +176,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 						player.sendMessage("Your coach can't hit the ball so quickly.");
 						return false;
 					}
-					int range = plugin.getConfig().getInt("Coach.Coach_Range",120);
+					int range = plugin.getConfig().getInt("CoachManager.Coach_Range",120);
 					Collection <Entity> entities = player.getNearbyEntities(range, 10, range);
 					if(entities.isEmpty()){
 						player.sendMessage("You are too far from your coach to practice.");
@@ -184,7 +184,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 					}
 					for(Iterator<Entity> eitr = entities.iterator(); eitr.hasNext();){
 						Entity entity = eitr.next();
-						if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Coach.Coach_Name"))){
+						if(entity instanceof ArmorStand && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("CoachManager.Coach_Name"))){
 							SnowballGameAPI.playWithCoach(player, (ArmorStand)entity, Util.getBallType(item.getItemMeta().getLore()));
 							break;
 						}else if(!eitr.hasNext()){
@@ -263,7 +263,7 @@ public class SnowballGameCommandExecutor implements CommandExecutor, TabComplete
 						item = Util.getGlove();
 					}else if(args[1].equalsIgnoreCase("Umpire")){
 						item = Util.getUmpire();
-					}else if(args[1].equalsIgnoreCase("Coach")){
+					}else if(args[1].equalsIgnoreCase("CoachManager")){
 						item = Util.getCoach();
 					}else if(args[1].equalsIgnoreCase("Base")){
 						item = Util.getBase();
