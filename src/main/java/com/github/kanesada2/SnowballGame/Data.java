@@ -24,6 +24,8 @@ public class Data {
 		regardUp.add(Material.ORANGE_CARPET);
 		regardUp.add(Material.PINK_CARPET);
 		regardUp.add(Material.PURPLE_CARPET);
+		regardUp.add(Material.YELLOW_CARPET);
+		regardUp.add(Material.WHITE_CARPET);
 		regardUp.add(Material.DAYLIGHT_DETECTOR);
 		regardUp.add(Material.DETECTOR_RAIL);
 		regardUp.add(Material.REPEATER);
