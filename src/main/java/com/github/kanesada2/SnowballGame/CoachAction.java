@@ -72,21 +72,23 @@ public class CoachAction {
 		return "Throwing";
 	}
 
-	public void ballHitAction(Projectile ball){
+	public boolean ballHitAction(Projectile ball){
+		if(!(ball.getShooter() instanceof BlockProjectileSource) && ((LivingEntity)ball.getShooter()).isDead()){
+			return false;
+		}
 		switch(getType()){
 		case "Batting":
-			hitBall(ball);
-			break;
+			return hitBall(ball);
 		case "Catching":
-			catchBall(ball);
-			break;
+			return catchBall(ball);
 		case "Throwing":
-			throwBall(ball);
-			break;
+			return throwBall(ball);
+		default:
+			return false;
 		}
 	}
 
-	public void hitBall(Projectile ball){
+	public boolean hitBall(Projectile ball){
 		if(ball.getShooter() instanceof BlockProjectileSource){
 			 Location loc = coach.getLocation();
 			 List<Player> players = loc.getWorld().getPlayers();
@@ -101,13 +103,16 @@ public class CoachAction {
 			 if(fielders.size() > 0){
 				 Player fielder = fielders.get((int) Math.floor(Math.random() * fielders.size()));
 				 SnowballGameAPI.playWithCoach(fielder, coach, ball.getMetadata("ballType").get(0).asString());
+			 }else{
+				 return false;
 			 }
 		 }else if(ball.getShooter() instanceof Player){
 			 SnowballGameAPI.playWithCoach((Player)ball.getShooter(), coach, ball.getMetadata("ballType").get(0).asString());
 		 }
+		return true;
 	}
 
-	public void catchBall(Projectile ball){
+	public boolean catchBall(Projectile ball){
 		Util.broadcastRange(coach, Util.addColors(plugin.getConfig().getString("Broadcast.Catch.Message").replaceAll("\\Q[[PLAYER]]\\E", this.coach.getCustomName())), plugin.getConfig().getInt("Broadcast.Catch.Range", 0));
 		ItemStack itemBall = Util.getBall(ball.getMetadata("ballType").get(0).asString());
 		Location loc = coach.getLocation();
@@ -118,11 +123,19 @@ public class CoachAction {
 			loc = source.getBlock().getLocation().add(0.5, 2.2, 0.5);
 		}
 		ball.getWorld().dropItem(loc, itemBall);
+		return true;
 	}
 
-	public void throwBall(Projectile ball){
+	public boolean throwBall(Projectile ball){
+		if(ball.getShooter() instanceof ArmorStand){
+			ArmorStand thrower = (ArmorStand)ball.getShooter();
+			if(Util.isEntityCoach(thrower) && Util.isBall(thrower.getItemInHand())){
+				return false;
+			}
+		}
 		Vector velocity = coach.getEyeLocation().getDirection().normalize().multiply(1.5);
 		SnowballGameAPI.launch(coach, null, false, ball.getMetadata("ballType").get(0).asString(), "ball", velocity, new Vector(0,0,0), 0, 0, null, coach.getEyeLocation(), new Vector(0,0,0));
+		return true;
 	}
 
 }
