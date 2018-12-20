@@ -218,8 +218,9 @@ public class SnowballGameListener implements Listener {
 					return;
 				}
 			 }else if(Util.isEntityCoach(event.getHitEntity())){
-				 new CoachAction(plugin, (ArmorStand)event.getHitEntity()).ballHitAction(projectile);
-				 return;
+				 if(new CoachAction(plugin, (ArmorStand)event.getHitEntity()).ballHitAction(projectile)){
+					 return;
+				 }
 			 }
 			 projectile.getWorld().dropItem(projectile.getLocation(), ball);
 			} else {
