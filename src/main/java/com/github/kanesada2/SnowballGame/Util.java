@@ -91,17 +91,11 @@ public final class Util {
 	 }
 	 public static boolean doesRegardUp(Block block){
 		 HashSet <Material> excluded = Data.regardUpList();
-		 if(excluded.contains(block.getType())){
-			 return true;
-		 }
-		 return false;
+		return excluded.contains(block.getType());
 	 }
 	 public static boolean doesRepel(Block block){
 		 HashSet <Material> excluded = Data.noRepelList();
-		 if(excluded.contains(block.getType())){
-			 return false;
-		 }
-		 return true;
+		 return !(block.isLiquid() || excluded.contains(block.getType()));
 	 }
 	 public static boolean isMyItem(ItemStack item){
 		 if(!item.hasItemMeta()){
@@ -134,11 +128,11 @@ public final class Util {
 	 }
 
 	 public static boolean isUmpireMarker(Entity entity){
-		return entity instanceof ArmorStand && isUmpire(((ArmorStand)entity).getBoots()) && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Umpire.Umpire_Name", "Umpire"));
+		return entity instanceof ArmorStand && isUmpire(((ArmorStand)entity).getBoots());
 	 }
 
 	 public static boolean isBaseMarker(Entity entity){
-		return entity instanceof ArmorStand && isBase(((ArmorStand)entity).getBoots()) && entity.getCustomName() != null && entity.getCustomName().equalsIgnoreCase(plugin.getConfig().getString("Base.Base_Name", "Base"));
+		return entity instanceof ArmorStand && isBase(((ArmorStand)entity).getBoots());
 	 }
 
 	 public static ItemStack getBall(String type){

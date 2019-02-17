@@ -14,6 +14,7 @@ public class BallMovingTask extends BukkitRunnable {
     private double random = 0;
     private double acceleration = 0;
     private double x,y,z;
+    private Vector initialMove;
 	public BallMovingTask(Projectile ball, Vector spinVector, double acceleration, Particle particle, double random) {
         this.ball = ball;
         this.spinVector = spinVector;
