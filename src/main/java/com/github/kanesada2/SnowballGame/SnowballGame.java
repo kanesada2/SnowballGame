@@ -15,6 +15,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class SnowballGame extends JavaPlugin implements Listener{
 
 	private SnowballGameListener listener;
+	private AprilFoolListener aprilFoolListener;
 	private SnowballGameCommandExecutor commandExecutor;
 	public final HashSet<UUID> notifyDisabled = new HashSet<>();
 
@@ -23,6 +24,10 @@ public class SnowballGame extends JavaPlugin implements Listener{
 		this.saveDefaultConfig();
         listener = new SnowballGameListener(this);
         getServer().getPluginManager().registerEvents(listener, this);
+        if(Util.isAprilFool()){
+        	aprilFoolListener = new AprilFoolListener(this);
+        	getServer().getPluginManager().registerEvents(aprilFoolListener, this);
+        }
         registerCustomRecipes();
         commandExecutor = new SnowballGameCommandExecutor(this);
         getCommand("SnowballGame").setExecutor(commandExecutor);

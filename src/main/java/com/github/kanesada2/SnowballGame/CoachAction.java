@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Particle;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -136,6 +137,21 @@ public class CoachAction {
 		Vector velocity = coach.getEyeLocation().getDirection().normalize().multiply(1.5);
 		SnowballGameAPI.launch(coach, null, false, ball.getMetadata("ballType").get(0).asString(), "ball", velocity, new Vector(0,0,0), 0, 0, null, coach.getEyeLocation(), new Vector(0,0,0));
 		return true;
+	}
+
+	public void glad(){
+		Vector jump = new Vector(0, 0.5, 0);
+		coach.setVelocity(jump);
+		coach.getWorld().spawnParticle(Particle.HEART, coach.getEyeLocation(), 3, 0.2, 0.2, 0.2);
+		plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable()
+	      {
+	        @Override
+	        public void run()
+	        {
+	        	coach.setVelocity(jump);
+	        	coach.getWorld().spawnParticle(Particle.HEART, coach.getEyeLocation(), 3, 0.2, 0.2, 0.2);
+	        }
+	      }, (15L));
 	}
 
 }

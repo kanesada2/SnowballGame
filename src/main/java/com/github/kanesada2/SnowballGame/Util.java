@@ -1,7 +1,10 @@
 package com.github.kanesada2.SnowballGame;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
@@ -134,6 +137,12 @@ public final class Util {
 
 	 public static boolean isBaseMarker(Entity entity){
 		return entity instanceof ArmorStand && isBase(((ArmorStand)entity).getBoots());
+	 }
+
+	 public static boolean isHeroineName(String name){
+		 if(name == null) return false;
+		 String[] names = {"Masumi", "Nagisa", "Yui", "Chihiro"};
+		 return Arrays.asList(names).contains(name);
 	 }
 
 	 public static ItemStack getBall(String type){
@@ -325,5 +334,21 @@ public final class Util {
 			 }
 		 }
 		 return particle;
+	 }
+
+	 public static boolean isAprilFool(){
+		 Calendar cal = Calendar.getInstance();
+		 cal.set(Calendar.MONTH, 3);
+		 cal.set(Calendar.DAY_OF_MONTH, 1);
+		 cal.set(Calendar.HOUR_OF_DAY, 0);
+		 cal.set(Calendar.MINUTE, 0);
+	     cal.set(Calendar.SECOND, 0);
+		 Date start = cal.getTime();
+		 cal.set(Calendar.HOUR_OF_DAY, 23);
+		 cal.set(Calendar.MINUTE, 59);
+	     cal.set(Calendar.SECOND, 59);
+	     Date finish = cal.getTime();
+	     Date now = new Date();
+	     return now.after(start) && now.before(finish);
 	 }
 }
