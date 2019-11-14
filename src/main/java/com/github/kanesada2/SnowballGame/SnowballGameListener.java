@@ -446,16 +446,18 @@ public class SnowballGameListener implements Listener {
 		}
 		Location loc = event.getBlock().getLocation();
 		Collection <Entity> entities = loc.getWorld().getNearbyEntities(loc, 2, 2, 2);
+		Block target = loc.getWorld().getBlockAt(loc);
 		for (Entity entity : entities) {
-			if(Util.isUmpireMarker(entity)){
-				loc.getWorld().dropItemNaturally(loc, Util.getUmpire());
-				entity.remove();
-			}else if(Util.isBaseMarker(entity)){
-				loc.getWorld().dropItemNaturally(loc, Util.getBase());
-				entity.remove();
+			if(!(Util.isMyMarker(entity))) continue;
+			ItemStack drop = Util.getUmpire();
+			if(Util.isBaseMarker(entity)){
+				drop = Util.getBase();
 			}
-
-			loc.getWorld().getBlockAt(loc).setType(Material.AIR);
+			entity.remove();
+			loc.getWorld().dropItemNaturally(loc, drop);
+			if(target.getType() == Material.AIR){
+				target.setType(Material.AIR);
+			}
 		}
 	}
 	@EventHandler(priority = EventPriority.LOW)
@@ -530,7 +532,7 @@ public class SnowballGameListener implements Listener {
 			Location loc = player.getLocation();
 			Collection <Entity> entities = loc.getWorld().getNearbyEntities(loc, 0.8, 0.5, 0.8);
 			for (Entity entity : entities) {
-				if(Util.isUmpireMarker(entity) || Util.isBaseMarker(entity)){
+				if(Util.isMyMarker(entity)){
 					String msg = plugin.getConfig().getString("Broadcast.Touch_Base.Message");
 					int range = plugin.getConfig().getInt("Broadcast.Touch_Base.Range", 0);
 					msg = msg.replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString());
@@ -558,7 +560,7 @@ public class SnowballGameListener implements Listener {
 		Location loc = player.getLocation();
 		Collection <Entity> entities = loc.getWorld().getNearbyEntities(loc, 0.8, 0.5, 0.8);
 		for (Entity entity : entities) {
-			if(Util.isUmpireMarker(entity) || Util.isBaseMarker(entity)){
+			if(Util.isMyMarker(entity)){
 				String msg = plugin.getConfig().getString("Broadcast.Touch_Base.Message");
 				int range = plugin.getConfig().getInt("Broadcast.Touch_Base.Range", 0);
 				msg = msg.replaceAll("\\Q[[PLAYER]]\\E", player.getName().toString());

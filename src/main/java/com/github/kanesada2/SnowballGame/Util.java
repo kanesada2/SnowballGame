@@ -136,6 +136,10 @@ public final class Util {
 		return entity instanceof ArmorStand && isBase(((ArmorStand)entity).getBoots());
 	 }
 
+	 public static boolean isMyMarker(Entity entity){
+		 return isUmpireMarker(entity) || isBaseMarker(entity);
+	 }
+
 	 public static ItemStack getBall(String type){
 		 ItemStack ball = new ItemStack(Material.SNOWBALL);
 		 ItemMeta ballMeta = ball.getItemMeta();
