@@ -423,6 +423,7 @@ public class SnowballGameListener implements Listener {
 		Block target = event.getBlock();
 		Location loc = target.getLocation();
 		Collection <Entity> entities = loc.getWorld().getNearbyEntities(loc, 2, 2, 2);
+		boolean isDropped = false;
 		for (Entity entity : entities) {
 			if(!(Util.isMyMarker(entity))) continue;
 			ItemStack label = ((ArmorStand)entity).getBoots();
@@ -435,15 +436,17 @@ public class SnowballGameListener implements Listener {
 			Location labelLoc = new Location(loc.getWorld(), Float.parseFloat(coords[0]), Float.parseFloat(coords[1]), Float.parseFloat(coords[2]));
 			if(! loc.equals(labelLoc)) continue;
 			entity.remove();
+			event.setCancelled(true);
+			if(target.getType() != Material.AIR){
+				target.setType(Material.AIR);
+			}
+			if(isDropped) continue;
 			ItemStack drop = Util.getUmpire();
 			if(Util.isBaseMarker(entity)){
 				drop = Util.getBase();
 			}
-			event.setCancelled(true);
 			loc.getWorld().dropItemNaturally(loc, drop);
-			if(target.getType() != Material.AIR){
-				target.setType(Material.AIR);
-			}
+			isDropped = true;
 		}
 	}
 	@EventHandler(priority = EventPriority.LOW)
