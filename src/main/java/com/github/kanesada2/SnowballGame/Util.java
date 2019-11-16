@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.entity.EntityType;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -138,6 +139,40 @@ public final class Util {
 
 	 public static boolean isMyMarker(Entity entity){
 		 return isUmpireMarker(entity) || isBaseMarker(entity);
+	 }
+
+	 public static void setUpBase(Block block, ItemStack item, boolean isUmpire){
+		if(! item.hasItemMeta()) return;
+		String enabledPath = "Base.Enabled_Base";
+		String namePath = "Base.Base_Name";
+		Location loc = block.getLocation().add(0.5, 0.5, 0.5);
+		ItemStack label = getBase();
+		if(isUmpire){
+			enabledPath = "Umpire.Enabled_Umpire";
+			namePath = "Umpire_Umpire_Name";
+			loc.add(0, 0.5, 0);
+			label = getUmpire();
+		}
+		if(!plugin.getConfig().getBoolean(enabledPath)) return;
+		ArmorStand marker = (ArmorStand)loc.getWorld().spawnEntity(loc, EntityType.ARMOR_STAND);
+		String name = plugin.getConfig().getString(namePath);
+		if(item.getItemMeta().hasDisplayName()){
+			name = item.getItemMeta().getDisplayName();
+		}
+		marker.setCustomName(name);
+		marker.setCustomNameVisible(true);
+		marker.setVisible(false);
+		marker.setCollidable(false);
+		marker.setInvulnerable(true);
+		marker.setMarker(true);
+		marker.setGravity(false);
+
+		String labelLoc = block.getLocation().toVector().toString();
+		labelLoc = labelLoc.substring(0, labelLoc.length() -1);
+		ItemMeta meta = label.getItemMeta();
+		meta.setDisplayName(labelLoc);
+		label.setItemMeta(meta);
+		marker.setBoots(label);
 	 }
 
 	 public static ItemStack getBall(String type){

@@ -407,55 +407,37 @@ public class SnowballGameListener implements Listener {
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void onBasePlaced(BlockPlaceEvent event){
-		if(Util.isUmpire(event.getItemInHand()) && plugin.getConfig().getBoolean("Umpire.Enabled_Umpire")){
-			Location location = event.getBlock().getLocation().add(new Vector(0.5, 1, 0.5));
-			ArmorStand pl = (ArmorStand)location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
-			if(event.getItemInHand().getItemMeta().hasDisplayName()){
-				pl.setCustomName(event.getItemInHand().getItemMeta().getDisplayName());
-			}else{
-				pl.setCustomName(plugin.getConfig().getString("Umpire.Umpire_Name"));
-			}
-			pl.setBoots(Util.getUmpire());
-			pl.setCustomNameVisible(true);
-			pl.setVisible(false);
-			pl.setCollidable(false);
-			pl.setInvulnerable(true);
-			pl.setMarker(true);
-			pl.setGravity(false);
-		}else if(Util.isBase(event.getItemInHand()) && plugin.getConfig().getBoolean("Base.Enabled_Base")){
-			Location location = event.getBlock().getLocation().add(0.5, 0.5, 0.5);
-			ArmorStand pl = (ArmorStand)location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
-			if(event.getItemInHand().getItemMeta().hasDisplayName()){
-				pl.setCustomName(event.getItemInHand().getItemMeta().getDisplayName());
-			}else{
-				pl.setCustomName(plugin.getConfig().getString("Base.Base_Name"));
-			}
-			pl.setBoots(Util.getBase());
-			pl.setCustomNameVisible(true);
-			pl.setVisible(false);
-			pl.setCollidable(false);
-			pl.setInvulnerable(true);
-			pl.setMarker(true);
-			pl.setGravity(false);
-		}
+		ItemStack item = event.getPlayer().getInventory().getItemInMainHand();
+		if(!(Util.isBase(item) || Util.isUmpire(item))) return;
+		Util.setUpBase(event.getBlock(), item, Util.isUmpire(item));
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void onBaseBroken(BlockBreakEvent event){
 		if(!(event.getBlock().getType() == Material.QUARTZ_BLOCK || event.getBlock().getDrops().contains(new ItemStack(Material.QUARTZ_SLAB)))){
 			return;
 		}
-		Location loc = event.getBlock().getLocation();
+		Block target = event.getBlock();
+		Location loc = target.getLocation();
 		Collection <Entity> entities = loc.getWorld().getNearbyEntities(loc, 2, 2, 2);
-		Block target = loc.getWorld().getBlockAt(loc);
 		for (Entity entity : entities) {
 			if(!(Util.isMyMarker(entity))) continue;
+			ItemStack label = ((ArmorStand)entity).getBoots();
+			String locString = label.getItemMeta().getDisplayName();
+			String[] coords = locString.split(",");
+			if(coords.length != 3){
+				entity.remove();
+				continue;
+			}
+			Location labelLoc = new Location(loc.getWorld(), Float.parseFloat(coords[0]), Float.parseFloat(coords[1]), Float.parseFloat(coords[2]));
+			if(! loc.equals(labelLoc)) continue;
+			entity.remove();
 			ItemStack drop = Util.getUmpire();
 			if(Util.isBaseMarker(entity)){
 				drop = Util.getBase();
 			}
-			entity.remove();
+			event.setCancelled(true);
 			loc.getWorld().dropItemNaturally(loc, drop);
-			if(target.getType() == Material.AIR){
+			if(target.getType() != Material.AIR){
 				target.setType(Material.AIR);
 			}
 		}
