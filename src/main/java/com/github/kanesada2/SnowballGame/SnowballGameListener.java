@@ -338,11 +338,7 @@ public class SnowballGameListener implements Listener {
 			      }, (4L));
 			}
 		}else if(event.getAction() == Action.LEFT_CLICK_BLOCK){
-<<<<<<< Updated upstream
 			if(!(event.getClickedBlock().getDrops().contains(new ItemStack(Material.STEP,1,(short)7)) || event.getClickedBlock().getType() == Material.QUARTZ_BLOCK)){
-=======
-			if(!(event.getClickedBlock().getDrops().contains(new ItemStack(Material.QUARTZ_SLAB)) || event.getClickedBlock().getType() == Material.QUARTZ_BLOCK)){
->>>>>>> Stashed changes
 				return;
 			}
 			String msg;
