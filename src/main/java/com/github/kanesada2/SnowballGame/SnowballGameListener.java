@@ -338,7 +338,7 @@ public class SnowballGameListener implements Listener {
 			      }, (4L));
 			}
 		}else if(event.getAction() == Action.LEFT_CLICK_BLOCK){
-			if(!(event.getClickedBlock().getDrops().contains(new ItemStack(Material.QUARTZ_SLAB)) || event.getClickedBlock().getType() == Material.QUARTZ_BLOCK)){
+			if(!(event.getClickedBlock().getType() == Material.QUARTZ_SLAB || event.getClickedBlock().getType() == Material.QUARTZ_BLOCK)){
 				return;
 			}
 			String msg;
@@ -413,7 +413,7 @@ public class SnowballGameListener implements Listener {
 	}
 	@EventHandler(priority = EventPriority.LOW)
 	public void onBaseBroken(BlockBreakEvent event){
-		if(!(event.getBlock().getType() == Material.QUARTZ_BLOCK || event.getBlock().getDrops().contains(new ItemStack(Material.QUARTZ_SLAB)))){
+		if(!(event.getBlock().getType() == Material.QUARTZ_BLOCK || event.getBlock().getType() == Material.QUARTZ_SLAB)){
 			return;
 		}
 		Block target = event.getBlock();
