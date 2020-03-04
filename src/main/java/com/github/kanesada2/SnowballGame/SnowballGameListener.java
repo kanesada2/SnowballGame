@@ -11,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Dispenser;
 import org.bukkit.entity.AreaEffectCloud;
 import org.bukkit.entity.ArmorStand;
@@ -19,6 +20,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.Snowball;
+import org.bukkit.entity.Snowman;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -594,6 +596,20 @@ public class SnowballGameListener implements Listener {
 			cloud.setDuration(plugin.getConfig().getInt("Particle.BattedBall_Ground.Time",200));
 			cloud.setRadius(1.5f);
 		}
+	}
+
+	@EventHandler(priority = EventPriority.LOWEST)
+	public void onRobinSpawned(BlockPlaceEvent event){
+		Block head = event.getBlock();
+		if(head.getType() != Material.HONEY_BLOCK) return;
+		Block body = head.getRelative(BlockFace.DOWN);
+		if(body.getType() != Material.SNOW_BLOCK) return;
+		Block foot = body.getRelative(BlockFace.DOWN);
+		if(foot.getType() != Material.SNOW_BLOCK) return;
+		Snowman robin = (Snowman)foot.getWorld().spawnEntity(foot.getLocation(), EntityType.SNOWMAN);
+		robin.setCustomName("Robin");
+		robin.setCustomNameVisible(true);
+		robin.setInvulnerable(true);
 	}
 
 }
