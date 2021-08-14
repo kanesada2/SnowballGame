@@ -590,7 +590,6 @@ public class SnowballGameListener implements Listener {
 			if (event.getPlayer().hasMetadata("onSlide") || !event.getPlayer().isSprinting()) {
 				return;
 			}
-			player.setVelocity(player.getLocation().getDirection().normalize().multiply(1.2).setY(0));
 			player.setMetadata("onSlide", new FixedMetadataValue(plugin, true));
 			new PlayerCoolDownTask(plugin, player).runTaskLater(plugin, 50);
 			Location newfacing = player.getLocation();
@@ -598,6 +597,12 @@ public class SnowballGameListener implements Listener {
 			player.teleport(newfacing);
 			player.sendMessage(Util.addColors("[[DARK_AQUA]][[BOLD]]*** YOU ARE TRYING TO DIVE! ***"));
 			player.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 10, 128));
+			plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable() {
+				@Override
+				public void run() {
+					player.setVelocity(player.getLocation().getDirection().normalize().multiply(1.2).setY(0));
+				}
+			}, (1L));
 		}
 	}
 
